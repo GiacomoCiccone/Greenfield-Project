@@ -1,18 +1,20 @@
 package administrator.server;
 
 import administrator.server.infrastructure.JerseyServer;
+import administrator.server.infrastructure.MQTTClient;
 
 import java.util.Scanner;
 
 public class Server {
 
-    private static final String BASE_URI = "http://localhost:8080/";
-
-    private static final JerseyServer jerseyServer = new JerseyServer(BASE_URI);
+    private static final JerseyServer jerseyServer = new JerseyServer();
+    private static final MQTTClient mqttClient = new MQTTClient();
 
     public static void main(String[] args) {
-        jerseyServer.initialize();
+
+
         jerseyServer.start();
+        mqttClient.connect();
 
         try {
             Thread.sleep(1000);
@@ -22,6 +24,7 @@ public class Server {
 
         System.out.println();
         jerseyServer.stop();
+        mqttClient.disconnect();
 
     }
 }
