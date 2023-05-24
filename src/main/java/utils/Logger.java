@@ -7,7 +7,6 @@ import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.UUID;
 import java.util.logging.*;
 
 public class Logger {
