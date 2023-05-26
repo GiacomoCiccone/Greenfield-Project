@@ -3,7 +3,7 @@ package administrator.server.robot;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
-@Path("/robot")
+@Path("/robotMock")
 public class RobotAPI {
 
     @GET
