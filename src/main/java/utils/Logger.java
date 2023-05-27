@@ -13,12 +13,6 @@ public class Logger {
 
     private static final String LOG_FOLDER = getMainClassPathName() + File.separator + "logs";
     private static final java.util.logging.Logger logger;
-    private static final String processId = getProcessId();
-
-    private static String getProcessId() {
-        String processName = ManagementFactory.getRuntimeMXBean().getName();
-        return processName.split("@")[0]; // PID@hostname
-    }
 
     static {
         try {
@@ -27,7 +21,7 @@ public class Logger {
                 logFolder.mkdirs();
             }
             String loggerName = getMainClassPackageName();
-            String fileName = LOG_FOLDER + File.separator + getDateFormatted().substring(0, 10) + "." + processId + ".log";
+            String fileName = LOG_FOLDER + File.separator + getMainClassPackageName() + "." + getDateFormatted().substring(0, 10) + ".log";
             FileHandler fileHandler = new FileHandler(fileName, true);
             Formatter formatter = new Formatter() {
                 @Override
