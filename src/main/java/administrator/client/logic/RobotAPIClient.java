@@ -1,4 +1,4 @@
-package administrator.client;
+package administrator.client.logic;
 
 import com.google.gson.Gson;
 import com.sun.jersey.api.client.ClientResponse;

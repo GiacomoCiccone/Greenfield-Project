@@ -1,5 +1,6 @@
 package administrator.client;
 
+import administrator.client.logic.CommandExecutor;
 import utils.Logger;
 
 import java.io.BufferedReader;

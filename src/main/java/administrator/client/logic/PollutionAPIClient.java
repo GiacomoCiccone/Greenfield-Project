@@ -1,4 +1,4 @@
-package administrator.client;
+package administrator.client.logic;
 
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;

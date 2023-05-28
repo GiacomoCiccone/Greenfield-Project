@@ -1,4 +1,4 @@
-package administrator.client;
+package administrator.client.logic;
 
 import common.bean.RobotInfoBean;
 import common.response.AveragePollutionValueResponse;
@@ -11,14 +11,26 @@ import java.util.List;
 public class CommandExecutor {
     private final RobotAPIClient robotApiClient;
     private final PollutionAPIClient pollutionApiClient;
+    private String lastCommand;
 
     public CommandExecutor() {
         this.robotApiClient = new RobotAPIClient();
         this.pollutionApiClient = new PollutionAPIClient();
+        lastCommand = "";
     }
 
     public String executeCommand(String command) {
         Logger.info("Executing command: " + command);
+
+        if (command.equals("last")) {
+            if (lastCommand.isEmpty()) {
+                return "No previous command";
+            } else {
+                command = lastCommand;
+            }
+        } else {
+            lastCommand = command;
+        }
 
         if (command.startsWith("show")) {
             return showAllRobots(command);
@@ -46,6 +58,16 @@ public class CommandExecutor {
         if (robots != null) {
             StringBuilder sb = new StringBuilder();
             for (RobotInfoBean robot : robots) {
+                if (robot.getId().equals(robots.get(robots.size() - 1).getId())) {
+                    sb.append("***************************\n")
+                            .append("*       Robot ID: ").append(robot.getId()).append("       *\n")
+                            .append("***************************\n")
+                            .append("* Position: (").append(robot.getX()).append(", ")
+                            .append(robot.getY()).append(")        *\n")
+                            .append("* District: ").append(Greenfield.getDistrictFromPosition(new Position(robot.getX(), robot.getY()))).append("             *\n")
+                            .append("***************************");
+                    break;
+                }
                 sb.append("***************************\n")
                         .append("*       Robot ID: ").append(robot.getId()).append("       *\n")
                         .append("***************************\n")
@@ -56,7 +78,7 @@ public class CommandExecutor {
             }
             return sb.toString();
         } else {
-            return "Error retrieving robot information.";
+            return "Error retrieving robot information. Check the logs for more details.";
         }
     }
 
@@ -80,7 +102,7 @@ public class CommandExecutor {
                         "\n\t- Average value: " + averageResponse.getValue() +
                         "\n\t- Total samples: " + averageResponse.getTotalSample();
             } else {
-                return "Error retrieving pollution data.";
+                return "Error retrieving pollution data. Check the logs for more details.";
             }
         } else if (parts.length == 4 && parts[1].equals("--interval")) {
             String t1 = parts[2];
@@ -100,7 +122,7 @@ public class CommandExecutor {
                         "\n\t- Average value: " + averageResponse.getValue() +
                         "\n\t- Total samples: " + averageResponse.getTotalSample();
             } else {
-                return "Error retrieving pollution data.";
+                return "Error retrieving pollution data. Check the logs for more details.";
             }
         } else {
             return "Invalid command: " + command;
@@ -114,6 +136,7 @@ public class CommandExecutor {
                 "- get --last <n> <robotId>: Get last n pollution averages for robot\n" +
                 "- get --interval <t1> <t2>: Get pollution data between timestamps\n" +
                 "- help: Show available commands\n" +
-                "- exit: Quit the program\n";
+                "- last: Repeat last command\n" +
+                "- exit: Quit the program";
     }
 }
