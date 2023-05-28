@@ -1,5 +1,6 @@
 package administrator.client.logic;
 
+import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import common.response.AveragePollutionValueResponse;
@@ -39,7 +40,7 @@ public class PollutionAPIClient {
     }
 
     private WebResource getClientResource(String path) {
-        com.sun.jersey.api.client.Client jerseyClient = com.sun.jersey.api.client.Client.create();
+        Client jerseyClient = Client.create();
         return jerseyClient.resource(API_URL + path);
     }
 }

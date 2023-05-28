@@ -1,6 +1,7 @@
 package administrator.client.logic;
 
 import com.google.gson.Gson;
+import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import common.bean.RobotInfoBean;
@@ -30,7 +31,7 @@ public class RobotAPIClient {
     }
 
     private WebResource getClientResource(String path) {
-        com.sun.jersey.api.client.Client jerseyClient = com.sun.jersey.api.client.Client.create();
+        Client jerseyClient = Client.create();
         return jerseyClient.resource(API_URL + path);
     }
 }
