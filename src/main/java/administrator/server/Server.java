@@ -9,15 +9,16 @@ import java.util.Scanner;
 public class Server {
 
     private static final JerseyServer jerseyServer = new JerseyServer();
-//    private static final MQTTClient mqttClient = new MQTTClient();
+    private static final MQTTClient mqttClient = new MQTTClient();
 
     public static void main(String[] args) {
-
+        Logger.info("Starting server...");
 
         jerseyServer.start();
-//        mqttClient.connect();
+        mqttClient.connect();
 
         Scanner scanner = new Scanner(System.in);
+
 
         while (true) {
             System.out.print("Enter 'q' to quit: ");
@@ -32,6 +33,8 @@ public class Server {
         }
 
         jerseyServer.stop();
-//        mqttClient.disconnect();
+        mqttClient.disconnect();
+
+        Logger.info("Server stopped");
     }
 }

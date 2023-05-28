@@ -6,10 +6,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class ErrorResponse {
 
-    @XmlElement
     private String message;
 
-    @XmlElement
     private int statusCode;
 
     public ErrorResponse() {
