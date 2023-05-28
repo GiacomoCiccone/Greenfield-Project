@@ -15,7 +15,7 @@ public class RobotStorage {
     private RobotStorage() {
     }
 
-    public static RobotStorage getInstance() {
+    public static synchronized RobotStorage getInstance() {
         return instance;
     }
 

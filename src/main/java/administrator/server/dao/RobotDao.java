@@ -1,6 +1,7 @@
 package administrator.server.dao;
 
 import administrator.exception.DataIntegrityViolationException;
+import administrator.exception.NotFoundException;
 import administrator.server.model.RobotEntity;
 import administrator.server.storage.RobotStorage;
 import common.utils.Greenfield;
@@ -62,11 +63,11 @@ public class RobotDao {
     }
 
 
-    public synchronized void removeRobotById(String robotId) throws DataIntegrityViolationException {
+    public synchronized void removeRobotById(String robotId) throws NotFoundException {
         boolean removed = storageRef.getRobotData().removeIf(robotEntity -> robotEntity.getId().equals(robotId));
 
         if (!removed) {
-            throw new DataIntegrityViolationException("Robot with id " + robotId + " does not exist");
+            throw new NotFoundException("Robot with id " + robotId + " does not exist");
         }
     }
 

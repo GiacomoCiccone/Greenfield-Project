@@ -6,13 +6,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class RobotInitializationRequest {
 
-    @XmlElement
     String id;
-
-    @XmlElement
     String address;
-
-    @XmlElement
     int port;
 
     public RobotInitializationRequest(String id, String address, int port) {

@@ -2,45 +2,41 @@ package common.response;
 
 import common.bean.RobotInfoBean;
 
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
 @XmlRootElement
 public class RobotInitializationResponse {
 
-    @XmlElement
-    int xPosition;
+    int x;
 
-    @XmlElement
-    int yPosition;
+    int y;
 
-    @XmlElement
     List<RobotInfoBean> otherRobots;
 
     public RobotInitializationResponse() {
     }
 
-    public RobotInitializationResponse(int xPosition, int yPosition, List<RobotInfoBean> otherRobots) {
-        this.xPosition = xPosition;
-        this.yPosition = yPosition;
+    public RobotInitializationResponse(int x, int y, List<RobotInfoBean> otherRobots) {
+        this.x = x;
+        this.y = y;
         this.otherRobots = otherRobots;
     }
 
-    public int getxPosition() {
-        return xPosition;
+    public int getX() {
+        return x;
     }
 
-    public void setxPosition(int xPosition) {
-        this.xPosition = xPosition;
+    public void setX(int x) {
+        this.x = x;
     }
 
-    public int getyPosition() {
-        return yPosition;
+    public int getY() {
+        return y;
     }
 
-    public void setyPosition(int yPosition) {
-        this.yPosition = yPosition;
+    public void setY(int y) {
+        this.y = y;
     }
 
     public List<RobotInfoBean> getOtherRobots() {

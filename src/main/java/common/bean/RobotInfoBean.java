@@ -1,47 +1,41 @@
 package common.bean;
 
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class RobotInfoBean {
 
-    @XmlElement
-    private int xPosition;
-    @XmlElement
-    private int yPosition;
-    @XmlElement
+    private int x;
+    private int y;
     private String id;
-    @XmlElement
     private int port;
-    @XmlElement
     private String address;
 
     public RobotInfoBean() {
     }
 
-    public RobotInfoBean(int xPosition, int yPosition, String id, int port, String address) {
-        this.xPosition = xPosition;
-        this.yPosition = yPosition;
+    public RobotInfoBean(int x, int y, String id, int port, String address) {
+        this.x = x;
+        this.y = y;
         this.id = id;
         this.port = port;
         this.address = address;
     }
 
-    public int getxPosition() {
-        return xPosition;
+    public int getX() {
+        return x;
     }
 
-    public void setxPosition(int xPosition) {
-        this.xPosition = xPosition;
+    public void setX(int x) {
+        this.x = x;
     }
 
-    public int getyPosition() {
-        return yPosition;
+    public int getY() {
+        return y;
     }
 
-    public void setyPosition(int yPosition) {
-        this.yPosition = yPosition;
+    public void setY(int y) {
+        this.y = y;
     }
 
     public String getId() {

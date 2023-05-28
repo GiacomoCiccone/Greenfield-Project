@@ -1,14 +1,16 @@
 package administrator.server.api;
 
 import administrator.exception.DataIntegrityViolationException;
-import administrator.exception.InvalidRequestException;
+import administrator.exception.NotFoundException;
+import administrator.exception.InvalidParametersException;
 import administrator.server.adapter.RobotEntityAdapter;
 import administrator.server.dao.RobotDao;
 import administrator.server.model.RobotEntity;
-import administrator.validator.RobotInitializationRequestValidator;
+import administrator.server.validator.RobotInitializationRequestValidator;
 import common.bean.RobotInfoBean;
 import common.request.RobotInitializationRequest;
 import common.response.ErrorResponse;
+import common.response.GetAllRobotResponse;
 import common.response.RobotInitializationResponse;
 import common.utils.Greenfield;
 import common.utils.Position;
@@ -39,12 +41,12 @@ public class RobotAPI {
             return Response.status(Response.Status.NOT_FOUND).entity(errorResponse).build();
         }
 
-        List<RobotInfoBean> response = otherRobots.stream()
+        List<RobotInfoBean> list = otherRobots.stream()
                 .map(RobotEntityAdapter::adapt)
                 .collect(Collectors.toList());
 
         Logger.info("Returning robot list");
-        return Response.ok(response).build();
+        return Response.ok(new GetAllRobotResponse(list)).build();
     }
 
     @POST
@@ -58,11 +60,11 @@ public class RobotAPI {
         // Validate request
         try {
             RobotInitializationRequestValidator.validate(request);
-        } catch (InvalidRequestException e) {
+        } catch (InvalidParametersException e) {
             int statusCode = Response.Status.BAD_REQUEST.getStatusCode();
             ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), statusCode);
 
-            Logger.error("Invalid request: " + e.getMessage());
+            Logger.error(e.getMessage());
             return Response.status(statusCode).entity(errorResponse).build();
         }
 
@@ -125,9 +127,9 @@ public class RobotAPI {
 
         try {
             robotDao.removeRobotById(robotId);
-        } catch (DataIntegrityViolationException e) {
+        } catch (NotFoundException e) {
             int statusCode = Response.Status.NOT_FOUND.getStatusCode();
-            ErrorResponse errorResponse = new ErrorResponse("Robot with id " + robotId + " not found", statusCode);
+            ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), statusCode);
 
             Logger.error("Robot with id " + robotId + " not found");
             return Response.status(statusCode).entity(errorResponse).build();
