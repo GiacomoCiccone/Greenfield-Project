@@ -1,7 +1,6 @@
 package robot.task;
 
 import com.google.gson.Gson;
-import common.json.MeasurementJsonSchema;
 import common.json.RobotPollutionDataJsonSchema;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import robot.adapter.MeasurementAdapter;
@@ -59,7 +58,7 @@ public class SensorDataPublisher extends RobotTaskBase {
             }
 
             // Publish data to MQTT
-            List<MeasurementJsonSchema> jsonSchemaList = measurements.stream()
+            List<RobotPollutionDataJsonSchema.MeasurementJsonSchema> jsonSchemaList = measurements.stream()
                     .map(MeasurementAdapter::adapt)
                     .collect(Collectors.toList());
 

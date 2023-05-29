@@ -6,6 +6,7 @@ import utils.Logger;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.ConnectException;
 
 public class Client {
     public static void main(String[] args) {
@@ -16,19 +17,24 @@ public class Client {
         CommandExecutor commandExecutor = new CommandExecutor();
 
         while (true) {
-            System.out.print("Enter a command (or 'help' for available commands, 'exit' to quit): ");
             try {
-                String command = reader.readLine();
-                if (command.equalsIgnoreCase("exit")) {
-                    break;
+                System.out.print("Enter a command (or 'help' for available commands, 'exit' to quit): ");
+                try {
+                    String command = reader.readLine();
+                    if (command.equalsIgnoreCase("exit")) {
+                        break;
+                    }
+                    String response = commandExecutor.executeCommand(command);
+                    System.out.println(response + "\n");
+                } catch (IOException e) {
+                    Logger.warning("Error reading input: " + e.getMessage());
+                    System.err.println("Error reading input: " + e.getMessage());
                 }
-
-                String response = commandExecutor.executeCommand(command);
-                System.out.println(response + "\n");
-            } catch (IOException e) {
-                Logger.logException(e);
-                System.err.println("Error reading input: " + e.getMessage());
+            } catch (Exception e) {
+                System.out.println("Something went wrong. Check the logs for more details.");
+                Logger.warning("Error executing command: " + e.getMessage());
             }
+
         }
 
         System.out.println("Exiting the API Client...");

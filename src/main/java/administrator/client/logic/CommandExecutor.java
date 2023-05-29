@@ -1,5 +1,6 @@
 package administrator.client.logic;
 
+import administrator.client.Exception.ResponseException;
 import common.bean.RobotInfoBean;
 import common.response.AveragePollutionValueResponse;
 import common.utils.Greenfield;
@@ -20,7 +21,7 @@ public class CommandExecutor {
     }
 
     public String executeCommand(String command) {
-        Logger.info("Executing command: " + command);
+        Logger.debug("Executing command: " + command);
 
         if (command.equals("last")) {
             if (lastCommand.isEmpty()) {
@@ -41,7 +42,7 @@ public class CommandExecutor {
         } else if (command.equalsIgnoreCase("exit")) {
             return "Exiting the API Client...";
         } else {
-            Logger.info("Invalid command: " + command);
+            Logger.debug("Invalid command: " + command);
             return "Invalid command: " + command;
         }
     }
@@ -53,33 +54,35 @@ public class CommandExecutor {
             return "Invalid command: " + String.join(" ", parts);
         }
 
-        List<RobotInfoBean> robots = robotApiClient.getAllRobots();
+        List<RobotInfoBean> robots = null;
+        try {
+            robots = robotApiClient.getAllRobots();
+        } catch (ResponseException e) {
+            Logger.warning("Error getting robot list: " + e.getMessage());
+            return "Error getting robot list: " + e.getMessage();
+        }
 
-        if (robots != null) {
-            StringBuilder sb = new StringBuilder();
-            for (RobotInfoBean robot : robots) {
-                if (robot.getId().equals(robots.get(robots.size() - 1).getId())) {
-                    sb.append("***************************\n")
-                            .append("       Robot ID: ").append(robot.getId()).append("\n")
-                            .append("***************************\n")
-                            .append("* Position: (").append(robot.getX()).append(", ")
-                            .append(robot.getY()).append(")        *\n")
-                            .append("* District: ").append(Greenfield.getDistrictFromPosition(new Position(robot.getX(), robot.getY()))).append("             *\n")
-                            .append("***************************");
-                    break;
-                }
+        StringBuilder sb = new StringBuilder();
+        for (RobotInfoBean robot : robots) {
+            if (robot.getId().equals(robots.get(robots.size() - 1).getId())) {
                 sb.append("***************************\n")
                         .append("       Robot ID: ").append(robot.getId()).append("\n")
                         .append("***************************\n")
                         .append("* Position: (").append(robot.getX()).append(", ")
                         .append(robot.getY()).append(")        *\n")
                         .append("* District: ").append(Greenfield.getDistrictFromPosition(new Position(robot.getX(), robot.getY()))).append("             *\n")
-                        .append("***************************\n");
+                        .append("***************************");
+                break;
             }
-            return sb.toString();
-        } else {
-            return "Error retrieving robot information. Check the logs for more details.";
+            sb.append("***************************\n")
+                    .append("       Robot ID: ").append(robot.getId()).append("\n")
+                    .append("***************************\n")
+                    .append("* Position: (").append(robot.getX()).append(", ")
+                    .append(robot.getY()).append(")        *\n")
+                    .append("* District: ").append(Greenfield.getDistrictFromPosition(new Position(robot.getX(), robot.getY()))).append("             *\n")
+                    .append("***************************\n");
         }
+        return sb.toString();
     }
 
     private String processGetCommand(String command) {
@@ -92,17 +95,25 @@ public class CommandExecutor {
             try {
                 Integer.parseInt(n);
             } catch (NumberFormatException e) {
+                Logger.warning("Error: n must be in range [0, 2^31 - 1]");
                 return "Error: n must be in range [0, 2^31 - 1]";
             }
 
-            AveragePollutionValueResponse averageResponse = pollutionApiClient.getLastPollutionAverages(n, robotId);
+            AveragePollutionValueResponse averageResponse = null;
+            try {
+                averageResponse = pollutionApiClient.getLastPollutionAverages(n, robotId);
+            } catch (ResponseException e) {
+                Logger.warning("Error retrieving pollution data: " + e.getMessage());
+                return "Error retrieving pollution data: " + e.getMessage();
+            }
 
             if (averageResponse != null) {
                 return "Results: " +
                         "\n\t- Average value: " + averageResponse.getValue() +
                         "\n\t- Total samples: " + averageResponse.getTotalSample();
             } else {
-                return "Error retrieving pollution data. Check the logs for more details.";
+                Logger.warning("Error retrieving pollution data.");
+                return "Error retrieving pollution data.";
             }
         } else if (parts.length == 4 && parts[1].equals("--interval")) {
             String t1 = parts[2];
@@ -112,17 +123,24 @@ public class CommandExecutor {
                 Long.parseLong(t1);
                 Long.parseLong(t2);
             } catch (NumberFormatException e) {
+                Logger.warning("Error: t1 and t2 must be in range [0, 2^63 - 1]");
                 return "Error: t1 and t2 must be in range [0, 2^63 - 1]";
             }
 
-            AveragePollutionValueResponse averageResponse = pollutionApiClient.getPollutionDataByTimestamp(t1, t2);
+            AveragePollutionValueResponse averageResponse = null;
+            try {
+                averageResponse = pollutionApiClient.getPollutionDataByTimestamp(t1, t2);
+            } catch (ResponseException e) {
+                Logger.warning("Error retrieving pollution data: " + e.getMessage());
+                return "Error retrieving pollution data: " + e.getMessage();
+            }
 
             if (averageResponse != null) {
                 return "Results: " +
                         "\n\t- Average value: " + averageResponse.getValue() +
                         "\n\t- Total samples: " + averageResponse.getTotalSample();
             } else {
-                return "Error retrieving pollution data. Check the logs for more details.";
+                return "Error retrieving pollution data.";
             }
         } else {
             return "Invalid command: " + command;

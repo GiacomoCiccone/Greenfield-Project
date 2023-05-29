@@ -1,4 +1,4 @@
-package administrator.exception;
+package administrator.server.exception;
 
 public class DataIntegrityViolationException extends Exception {
 

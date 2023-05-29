@@ -2,7 +2,7 @@ package administrator.server.api;
 
 import administrator.exception.DataIntegrityViolationException;
 import administrator.exception.NotFoundException;
-import administrator.exception.InvalidParametersException;
+import administrator.exception.InvalidRequestParametersException;
 import administrator.server.adapter.RobotEntityAdapter;
 import administrator.server.dao.RobotDao;
 import administrator.server.model.RobotEntity;
@@ -17,6 +17,8 @@ import common.utils.Position;
 import utils.Logger;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,9 +29,9 @@ public class RobotAPI {
     @GET
     @Path("/list")
     @Produces("application/json")
-    public Response getRobotList() {
-
-        Logger.info("Received request to get robot list");
+    public Response getRobotList(@Context HttpHeaders headers) {
+        HostInfo hostInfo = HostInfo.parseHostInfo(headers);
+        Logger.info("Received request to get robot list from " + hostInfo.getAddress() + ":" + hostInfo.getPort());
 
         RobotDao robotDao = new RobotDao();
         List<RobotEntity> otherRobots = robotDao.getAllRobots();
@@ -37,7 +39,7 @@ public class RobotAPI {
         if (otherRobots.isEmpty()) {
             ErrorResponse errorResponse = new ErrorResponse("No robots found", Response.Status.NOT_FOUND.getStatusCode());
 
-            Logger.error("No robots found");
+            Logger.debug("No robots found");
             return Response.status(Response.Status.NOT_FOUND).entity(errorResponse).build();
         }
 
@@ -45,7 +47,7 @@ public class RobotAPI {
                 .map(RobotEntityAdapter::adapt)
                 .collect(Collectors.toList());
 
-        Logger.info("Returning robot list");
+        Logger.debug("Returning robot list");
         return Response.ok(new GetAllRobotResponse(list)).build();
     }
 
@@ -54,17 +56,16 @@ public class RobotAPI {
     @Produces("application/json")
     @Consumes("application/json")
     public Response addRobot(RobotInitializationRequest request) {
-
-        Logger.info("Received request to add robot with id " + request.getId());
+        Logger.info("Received request to add robot from " + request.getAddress() + ":" + request.getPort());
 
         // Validate request
         try {
             RobotInitializationRequestValidator.validate(request);
-        } catch (InvalidParametersException e) {
+        } catch (InvalidRequestParametersException e) {
             int statusCode = Response.Status.BAD_REQUEST.getStatusCode();
             ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), statusCode);
 
-            Logger.error(e.getMessage());
+            Logger.debug(e.getMessage());
             return Response.status(statusCode).entity(errorResponse).build();
         }
 
@@ -78,7 +79,7 @@ public class RobotAPI {
             int statusCode = Response.Status.CONFLICT.getStatusCode();
             ErrorResponse errorResponse = new ErrorResponse("Robot with id " + request.getId() + " already exists", statusCode);
 
-            Logger.error("Robot with id " + request.getId() + " already exists");
+            Logger.debug("Robot with id " + request.getId() + " already exists");
             return Response.status(statusCode).entity(errorResponse).build();
         }
 
@@ -94,8 +95,6 @@ public class RobotAPI {
         try {
             robotDao.addRobot(robotEntity);
         } catch (DataIntegrityViolationException e) {
-
-            Logger.error("Unexpected error: " + e.getMessage());
             throw new RuntimeException(e);
         }
 
@@ -112,16 +111,16 @@ public class RobotAPI {
         RobotInitializationResponse response = new RobotInitializationResponse(position.getX(), position.getY(), otherRobotInfos);
 
 
-        Logger.info("Robot with id " + request.getId() + " added successfully");
+        Logger.debug("Robot with id " + request.getId() + " added successfully");
         return Response.status(Response.Status.CREATED).entity(response).build();
     }
 
     @DELETE
     @Path("/remove/{robotId}")
     @Produces("application/json")
-    public Response removeRobot(@PathParam("robotId") String robotId) {
-
-        Logger.info("Received request to remove robot with id " + robotId);
+    public Response removeRobot(@PathParam("robotId") String robotId, @Context HttpHeaders headers) {
+        HostInfo hostInfo = HostInfo.parseHostInfo(headers);
+        Logger.info("Received request to remove robot from " + hostInfo.getAddress() + ":" + hostInfo.getPort());
 
         RobotDao robotDao = new RobotDao();
 
@@ -131,11 +130,11 @@ public class RobotAPI {
             int statusCode = Response.Status.NOT_FOUND.getStatusCode();
             ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), statusCode);
 
-            Logger.error("Robot with id " + robotId + " not found");
+            Logger.debug("Robot with id " + robotId + " not found");
             return Response.status(statusCode).entity(errorResponse).build();
         }
 
-        Logger.info("Robot with id " + robotId + " removed successfully");
+        Logger.debug("Robot with id " + robotId + " removed successfully");
         return Response.ok().build();
     }
 

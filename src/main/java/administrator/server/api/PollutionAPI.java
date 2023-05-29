@@ -11,6 +11,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
@@ -20,14 +22,15 @@ public class PollutionAPI {
     @GET
     @Path("/last/{n}/{robotId}")
     @Produces("application/json")
-    public Response getAveragePollutionDataOfRobot(@PathParam("n") int n, @PathParam("robotId") String robotId) {
-        Logger.info("Received request to get last " + n + " pollution entries for robot " + robotId);
+    public Response getAveragePollutionDataOfRobot(@PathParam("n") int n, @PathParam("robotId") String robotId, @Context HttpHeaders headers) {
+        HostInfo hostInfo = HostInfo.parseHostInfo(headers);
+        Logger.info("Received request to get average pollution data of robot from " + hostInfo.getAddress() + ":" + hostInfo.getPort());
 
         // Validate request
         if (n <= 0) {
             ErrorResponse errorResponse = new ErrorResponse("Invalid parameter: n must be greater than 0", Response.Status.BAD_REQUEST.getStatusCode());
 
-            Logger.error("Invalid parameter: n must be greater than 0");
+            Logger.debug("Invalid parameter: n must be greater than 0");
             return Response.status(Response.Status.BAD_REQUEST).entity(errorResponse).build();
         }
 
@@ -39,7 +42,7 @@ public class PollutionAPI {
         } catch (NotFoundException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), Response.Status.NOT_FOUND.getStatusCode());
 
-            Logger.error(e.getMessage());
+            Logger.debug("Not enough pollution data found for robot with id " + robotId);
             return Response.status(Response.Status.NOT_FOUND).entity(errorResponse).build();
         }
 
@@ -55,21 +58,22 @@ public class PollutionAPI {
 
         double average = sum / totalSample;
 
-        Logger.info("Returning average pollution data");
-        return Response.ok(new AveragePollutionValueResponse(average, totalSample)).build();
+        Logger.debug("Returning average pollution data");
+        return Response.ok(new AveragePollutionValueResponse(average, (int) totalSample)).build();
     }
 
     @GET
     @Path("/timestamp/{t1}/{t2}")
     @Produces("application/json")
-    public Response getAveragePollutionDataBetweenTimestamps(@PathParam("t1") long t1, @PathParam("t2") long t2) {
-        Logger.info("Received request to get average pollution data between " + t1 + " and " + t2);
+    public Response getAveragePollutionDataBetweenTimestamps(@PathParam("t1") long t1, @PathParam("t2") long t2, @Context HttpHeaders headers) {
+        HostInfo hostInfo = HostInfo.parseHostInfo(headers);
+        Logger.info("Received request to get average pollution data between timestamps from " + hostInfo.getAddress() + ":" + hostInfo.getPort());
 
         // Validate request
         if (t1 < 0 || t2 < 0 || t1 > t2) {
             ErrorResponse errorResponse = new ErrorResponse("Invalid parameters: t1 and t2 must be greater than 0 and t1 must be less than t2", Response.Status.BAD_REQUEST.getStatusCode());
 
-            Logger.error("Invalid parameters: t1 and t2 must be greater than 0 and t1 must be less than t2");
+            Logger.debug("Invalid parameters: t1 and t2 must be greater than 0 and t1 must be less than t2");
             return Response.status(Response.Status.BAD_REQUEST).entity(errorResponse).build();
         }
 
@@ -80,7 +84,7 @@ public class PollutionAPI {
         if (pollutionAnalysisData.isEmpty()) {
             ErrorResponse errorResponse = new ErrorResponse("No pollution data found in the given interval", Response.Status.NOT_FOUND.getStatusCode());
 
-            Logger.error("No pollution data found in the given interval");
+            Logger.debug("No pollution data found in the given interval");
             return Response.status(Response.Status.NOT_FOUND).entity(errorResponse).build();
         }
 
@@ -97,7 +101,7 @@ public class PollutionAPI {
 
         double average = sum / totalSample;
 
-        Logger.info("Returning average pollution data");
-        return Response.ok(new AveragePollutionValueResponse(average, totalSample)).build();
+        Logger.debug("Returning average pollution data");
+        return Response.ok(new AveragePollutionValueResponse(average, (int) totalSample)).build();
     }
 }

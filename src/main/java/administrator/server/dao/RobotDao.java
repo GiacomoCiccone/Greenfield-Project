@@ -5,10 +5,11 @@ import administrator.exception.NotFoundException;
 import administrator.server.model.RobotEntity;
 import administrator.server.storage.RobotStorage;
 import common.utils.Greenfield;
+import utils.Logger;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class RobotDao {
     private final RobotStorage storageRef;
@@ -41,7 +42,7 @@ public class RobotDao {
     public synchronized Optional<RobotEntity> getRobotById(String robotId) {
         for (RobotEntity robotEntity : storageRef.getRobotData()) {
             if (robotEntity.getId().equals(robotId)) {
-                return Optional.of(robotEntity);
+                return Optional.of(new RobotEntity(robotEntity));
             }
         }
 
@@ -49,7 +50,9 @@ public class RobotDao {
     }
 
     public synchronized List<RobotEntity> getAllRobots() {
-        return new LinkedList<>(storageRef.getRobotData());
+        return storageRef.getRobotData().stream()
+                .map(RobotEntity::new)
+                .collect(Collectors.toList());
     }
 
     public synchronized void addRobot(RobotEntity robot) throws DataIntegrityViolationException {
@@ -60,6 +63,8 @@ public class RobotDao {
         }
 
         storageRef.getRobotData().add(robot);
+
+        Logger.debug("Added robot with id " + robot.getId() + " to storage");
     }
 
 
@@ -69,6 +74,8 @@ public class RobotDao {
         if (!removed) {
             throw new NotFoundException("Robot with id " + robotId + " does not exist");
         }
+
+        Logger.debug("Removed robot with id " + robotId + " from storage");
     }
 
     public synchronized int getLessPopulatedDistrict() {

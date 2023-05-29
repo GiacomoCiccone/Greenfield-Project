@@ -3,6 +3,7 @@ package administrator.server.dao;
 import administrator.exception.NotFoundException;
 import administrator.server.model.PollutionDataEntity;
 import administrator.server.storage.PollutionStorage;
+import utils.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,7 @@ public class PollutionDao {
             storageRef.getPollutionData().put(robotId, new ArrayList<PollutionDataEntity>());
         }
 
+        Logger.debug("Adding pollution data entry for robot with id " + robotId);
         storageRef.getPollutionData().get(robotId).add(pollutionDataEntity);
     }
 
@@ -40,7 +42,13 @@ public class PollutionDao {
         int size = pollutionData.size();
         int startIndex = size - n;
 
-        return pollutionData.subList(startIndex, size);
+        // return deep copy of the sublist
+        List<PollutionDataEntity> result = new ArrayList<>(n);
+        for (int i = startIndex; i < size; i++) {
+            result.add(new PollutionDataEntity(pollutionData.get(i)));
+        }
+
+        return result;
     }
 
     public synchronized List<PollutionDataEntity> getAllPollutionEntriesInInterval(long t1, long t2) {
@@ -49,11 +57,10 @@ public class PollutionDao {
         for (List<PollutionDataEntity> pollutionDataEntries : storageRef.getPollutionData().values()) {
             for (PollutionDataEntity pollutionDataEntity : pollutionDataEntries) {
                 if (pollutionDataEntity.getTimestamp() >= t1 && pollutionDataEntity.getTimestamp() <= t2) {
-                    result.add(pollutionDataEntity);
+                    result.add(new PollutionDataEntity(pollutionDataEntity));
                 }
             }
         }
-
 
         return result;
     }

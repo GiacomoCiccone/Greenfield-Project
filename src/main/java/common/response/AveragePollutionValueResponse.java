@@ -5,12 +5,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class AveragePollutionValueResponse {
     double value;
-    double totalSample;
+    int totalSample;
 
     public AveragePollutionValueResponse() {
     }
 
-    public AveragePollutionValueResponse(double value, double totalSample) {
+    public AveragePollutionValueResponse(double value, int totalSample) {
         this.value = value;
         this.totalSample = totalSample;
     }
@@ -27,7 +27,7 @@ public class AveragePollutionValueResponse {
         return totalSample;
     }
 
-    public void setTotalSample(double totalSample) {
+    public void setTotalSample(int totalSample) {
         this.totalSample = totalSample;
     }
 }

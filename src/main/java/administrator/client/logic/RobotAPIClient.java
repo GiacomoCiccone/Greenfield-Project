@@ -1,5 +1,6 @@
 package administrator.client.logic;
 
+import administrator.client.Exception.ResponseException;
 import com.google.gson.Gson;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -16,7 +17,9 @@ import java.util.List;
 public class RobotAPIClient {
     private static final String API_URL = "http://localhost:8080";
 
-    public List<RobotInfoBean> getAllRobots() {
+    public List<RobotInfoBean> getAllRobots() throws ResponseException {
+        Logger.debug("Sending request to get robot list");
+
         WebResource webResource = getClientResource("/robot/list");
         ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
@@ -25,8 +28,7 @@ public class RobotAPIClient {
             return robotResponse.getList();
         } else {
             ErrorResponse errorResponse = response.getEntity(ErrorResponse.class);
-            Logger.error(errorResponse.getMessage());
-            return null;
+            throw new ResponseException(errorResponse.getMessage());
         }
     }
 

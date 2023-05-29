@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RobotStorage {
-    private List<RobotEntity> robotData = new ArrayList<RobotEntity>();
+    private final List<RobotEntity> robotData = new ArrayList<RobotEntity>();
 
     private boolean lockAcquired = false;
     private final Object lock = new Object();

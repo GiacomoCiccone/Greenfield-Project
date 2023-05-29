@@ -1,7 +1,6 @@
 package administrator.server.model;
 
 import common.utils.Position;
-import robot.Robot;
 
 public class RobotEntity {
     private String id;
@@ -14,6 +13,13 @@ public class RobotEntity {
         this.address = address;
         this.port = port;
         this.position = position;
+    }
+
+    public RobotEntity(RobotEntity other) {
+        this.id = other.id;
+        this.address = other.address;
+        this.port = other.port;
+        this.position = new Position(other.position);
     }
 
     public String getId() {
