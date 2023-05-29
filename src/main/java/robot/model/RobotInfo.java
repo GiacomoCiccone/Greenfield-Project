@@ -1,5 +1,6 @@
 package robot.model;
 
+import common.utils.Greenfield;
 import common.utils.Position;
 
 public class RobotInfo {
@@ -15,36 +16,47 @@ public class RobotInfo {
         this.position = position;
     }
 
-    public String getId() {
+    public RobotInfo() {
+        this.id = "";
+        this.port = 0;
+        this.address = "";
+        this.position = new Position(0, 0);
+    }
+
+    public synchronized String getId() {
         return id;
     }
 
-    public int getPort() {
+    public synchronized int getPort() {
         return port;
     }
 
-    public String getAddress() {
+    public synchronized String getAddress() {
         return address;
     }
 
-    public Position getPosition() {
+    public synchronized Position getPosition() {
         return position;
     }
 
-    public void setId(String id) {
+    public synchronized void setId(String id) {
         this.id = id;
     }
 
-    public void setPort(int port) {
+    public synchronized void setPort(int port) {
         this.port = port;
     }
 
-    public void setAddress(String address) {
+    public synchronized void setAddress(String address) {
         this.address = address;
     }
 
-    public void setPosition(Position position) {
+    public synchronized void setPosition(Position position) {
         this.position = position;
+    }
+
+    public synchronized int getDistrict() {
+        return Greenfield.getDistrictFromPosition(position);
     }
 
     @Override

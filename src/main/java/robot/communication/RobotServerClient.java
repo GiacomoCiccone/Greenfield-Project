@@ -38,4 +38,19 @@ public class RobotServerClient {
         Logger.info("Response received from server successfully.");
         return response.getEntity(RobotInitializationResponse.class);
     }
+
+    public void unregisterRobot(String id) {
+        Logger.info("Sending request to server to unregister robot.");
+
+        WebResource webResource = client.resource(serverAddress + "/robot/remove/" + id);
+        ClientResponse response = webResource.type("application/json").delete(ClientResponse.class);
+
+        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+            ErrorResponse errorResponse = response.getEntity(ErrorResponse.class);
+
+            Logger.error(errorResponse.getMessage());
+        }
+
+        Logger.info("Robot unregistered successfully.");
+    }
 }

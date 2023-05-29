@@ -6,8 +6,12 @@ import common.utils.Position;
 import robot.adapter.RobotInfoAdapter;
 import robot.communication.RobotServerClient;
 import robot.exception.ServerRequestException;
+import robot.model.PollutionDataStorage;
 import robot.model.RobotInfo;
 import robot.model.RobotNetwork;
+import robot.task.SensorDataPublisher;
+import robot.task.SensorDataReader;
+import robot.task.TaskManager;
 import utils.Logger;
 
 import java.util.Scanner;
@@ -17,6 +21,16 @@ public class Robot {
     private RobotInfo currentRobot;
     private RobotNetwork otherRobots;
     private String serverAddress;
+    private TaskManager taskManager;
+    private PollutionDataStorage storage;
+
+    public Robot() {
+        RobotInfo currentRobot = new RobotInfo();
+        RobotNetwork otherRobots = new RobotNetwork();
+        String serverAddress = "";
+        this.taskManager = new TaskManager();
+        this.storage = new PollutionDataStorage();
+    }
 
     public void initialize() throws ServerRequestException {
         Logger.info("Initializing robot");
@@ -41,12 +55,30 @@ public class Robot {
         this.currentRobot = new RobotInfo(id, port, "localhost", new Position(response.getX(), response.getY()));
         this.otherRobots = new RobotNetwork();
 
-        for (RobotInfoBean robotInfoBean : response.getOtherRobots()) {
-            RobotInfo robotInfo = RobotInfoAdapter.adapt(robotInfoBean);
-            this.otherRobots.addRobot(robotInfo);
+        System.out.println(response.getOtherRobots());
+
+        if (response.getOtherRobots() != null) {
+            for (RobotInfoBean robotInfoBean : response.getOtherRobots()) {
+                RobotInfo robotInfo = RobotInfoAdapter.adapt(robotInfoBean);
+                this.otherRobots.addRobot(robotInfo);
+            }
         }
 
         Logger.info("Robot initialized successfully");
+    }
+
+    private void startSensor() {
+        Logger.info("Starting sensor data reader");
+        taskManager.addTaskAndStart(new SensorDataReader(storage));
+    }
+
+    private void notifyOtherRobots() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    private void startPublishing() {
+        Logger.info("Starting publisher");
+        taskManager.addTaskAndStart(new SensorDataPublisher(currentRobot, storage));
     }
 
     public static void main(String[] args) {
@@ -63,8 +95,22 @@ public class Robot {
             return;
         }
 
-        System.out.println("Robot initialized successfully!");
+        robot.startSensor();
+        //robot.notifyOtherRobots();
+        robot.startPublishing();
 
+        System.out.println("Press enter to stop the robot");
+        Scanner scanner = new Scanner(System.in);
+
+        scanner.nextLine();
+
+        robot.taskManager.stopAllTasksAndClear();
+
+        RobotServerClient robotServerClient = new RobotServerClient(robot.serverAddress);
+        robotServerClient.unregisterRobot(robot.currentRobot.getId());
+
+        System.out.println("Robot stopped");
 
     }
+
 }

@@ -60,7 +60,7 @@ public class CommandExecutor {
             for (RobotInfoBean robot : robots) {
                 if (robot.getId().equals(robots.get(robots.size() - 1).getId())) {
                     sb.append("***************************\n")
-                            .append("*       Robot ID: ").append(robot.getId()).append("       *\n")
+                            .append("       Robot ID: ").append(robot.getId()).append("\n")
                             .append("***************************\n")
                             .append("* Position: (").append(robot.getX()).append(", ")
                             .append(robot.getY()).append(")        *\n")
@@ -69,7 +69,7 @@ public class CommandExecutor {
                     break;
                 }
                 sb.append("***************************\n")
-                        .append("*       Robot ID: ").append(robot.getId()).append("       *\n")
+                        .append("       Robot ID: ").append(robot.getId()).append("\n")
                         .append("***************************\n")
                         .append("* Position: (").append(robot.getX()).append(", ")
                         .append(robot.getY()).append(")        *\n")
