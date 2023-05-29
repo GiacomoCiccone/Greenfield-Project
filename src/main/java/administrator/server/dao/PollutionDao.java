@@ -40,7 +40,7 @@ public class PollutionDao {
         int size = pollutionData.size();
         int startIndex = size - n;
 
-        return new ArrayList<>(pollutionData.subList(startIndex, size));
+        return pollutionData.subList(startIndex, size);
     }
 
     public synchronized List<PollutionDataEntity> getAllPollutionEntriesInInterval(long t1, long t2) {

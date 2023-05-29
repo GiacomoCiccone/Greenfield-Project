@@ -12,12 +12,12 @@ import utils.Logger;
 
 import javax.ws.rs.core.Response;
 
-public class RobotServerClient {
+public class AdministratorRobotClient {
 
     private final Client client;
     private final String serverAddress;
 
-    public RobotServerClient(String serverAddress) {
+    public AdministratorRobotClient(String serverAddress) {
         this.serverAddress = serverAddress;
         this.client = Client.create();
     }

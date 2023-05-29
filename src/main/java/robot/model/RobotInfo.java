@@ -36,7 +36,7 @@ public class RobotInfo {
     }
 
     public synchronized Position getPosition() {
-        return position;
+        return new Position(position.getX(), position.getY());
     }
 
     public synchronized void setId(String id) {

@@ -23,6 +23,10 @@ public class RobotNetwork {
         return null;
     }
 
+    public synchronized List<RobotInfo> getAllRobots() {
+        return new ArrayList<>(otherRobots);
+    }
+
     public synchronized void removeRobotById(String id) {
         for (RobotInfo robot : otherRobots) {
             if (robot.getId().equals(id)) {

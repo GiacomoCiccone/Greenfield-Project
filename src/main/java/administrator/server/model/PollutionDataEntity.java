@@ -1,5 +1,6 @@
 package administrator.server.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PollutionDataEntity {

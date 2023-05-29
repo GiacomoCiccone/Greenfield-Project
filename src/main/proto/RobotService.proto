@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+import "google/protobuf/empty.proto";
+
+package robot;
+
+message RobotInfo {
+  required string id = 1;
+  required int32 port = 2;
+  required string address = 3;
+  required int32 x = 4;
+  required int32 y = 5;
+}
+
+service RobotService {
+  rpc sendRobotInfo (RobotInfo) returns (google.protobuf.Empty);
+}

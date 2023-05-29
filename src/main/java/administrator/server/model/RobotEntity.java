@@ -1,6 +1,7 @@
 package administrator.server.model;
 
 import common.utils.Position;
+import robot.Robot;
 
 public class RobotEntity {
     private String id;

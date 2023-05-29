@@ -4,7 +4,9 @@ import common.bean.RobotInfoBean;
 import common.response.RobotInitializationResponse;
 import common.utils.Position;
 import robot.adapter.RobotInfoAdapter;
-import robot.communication.RobotServerClient;
+import robot.communication.AdministratorRobotClient;
+import robot.communication.RobotGRPCClient;
+import robot.communication.RobotGRPCServer;
 import robot.exception.ServerRequestException;
 import robot.model.PollutionDataStorage;
 import robot.model.RobotInfo;
@@ -23,6 +25,7 @@ public class Robot {
     private String serverAddress;
     private TaskManager taskManager;
     private PollutionDataStorage storage;
+    private RobotGRPCServer server;
 
     public Robot() {
         RobotInfo currentRobot = new RobotInfo();
@@ -47,16 +50,16 @@ public class Robot {
         System.out.print("Enter server address: ");
         String serverAddress = scanner.nextLine();
 
-        RobotServerClient robotServerClient = new RobotServerClient(serverAddress);
+        AdministratorRobotClient administratorRobotClient = new AdministratorRobotClient(serverAddress);
 
-        RobotInitializationResponse response = robotServerClient.initializeRobot(id, "localhost", port);
+        RobotInitializationResponse response = administratorRobotClient.initializeRobot(id, "localhost", port);
 
+        // Initialize robot info
         this.serverAddress = serverAddress;
         this.currentRobot = new RobotInfo(id, port, "localhost", new Position(response.getX(), response.getY()));
         this.otherRobots = new RobotNetwork();
 
-        System.out.println(response.getOtherRobots());
-
+        // Add other robots to the network if any
         if (response.getOtherRobots() != null) {
             for (RobotInfoBean robotInfoBean : response.getOtherRobots()) {
                 RobotInfo robotInfo = RobotInfoAdapter.adapt(robotInfoBean);
@@ -73,7 +76,24 @@ public class Robot {
     }
 
     private void notifyOtherRobots() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        server = new RobotGRPCServer(currentRobot.getPort(), otherRobots);
+        try {
+            Logger.info("Starting server");
+            server.start();
+        } catch (Exception e) {
+            Logger.error("Error while starting server.");
+            Logger.logException(e);
+
+            // Handle termination
+        }
+        if (otherRobots.getAllRobots().size() > 0) {
+            Logger.info("Notifying other robots");
+            for (RobotInfo peerRobot : otherRobots.getAllRobots()) {
+                Logger.info("Notifying robot " + peerRobot.getId());
+                RobotGRPCClient client = new RobotGRPCClient(peerRobot.getAddress(), peerRobot.getPort());
+                client.sendRobotInfo(peerRobot);
+            }
+        }
     }
 
     private void startPublishing() {
@@ -96,7 +116,7 @@ public class Robot {
         }
 
         robot.startSensor();
-        //robot.notifyOtherRobots();
+        robot.notifyOtherRobots();
         robot.startPublishing();
 
         System.out.println("Press enter to stop the robot");
@@ -106,8 +126,8 @@ public class Robot {
 
         robot.taskManager.stopAllTasksAndClear();
 
-        RobotServerClient robotServerClient = new RobotServerClient(robot.serverAddress);
-        robotServerClient.unregisterRobot(robot.currentRobot.getId());
+        AdministratorRobotClient administratorRobotClient = new AdministratorRobotClient(robot.serverAddress);
+        administratorRobotClient.unregisterRobot(robot.currentRobot.getId());
 
         System.out.println("Robot stopped");
 
