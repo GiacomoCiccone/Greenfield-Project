@@ -63,6 +63,10 @@ public class Logger {
         logger.log(Level.INFO, message);
     }
 
+    public static void warning(String message) {
+        logger.log(Level.WARNING, message);
+    }
+
     public static void error(String message) {
         logger.log(Level.SEVERE, message);
     }
