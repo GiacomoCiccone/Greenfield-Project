@@ -1,6 +1,8 @@
 package robot.simulator;
 
 
+import utils.Logger;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,7 +48,7 @@ public class PollutionBuffer implements Buffer {
             try {
                 wait(); // wait for the producer to fill the buffer
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                Logger.logException(e);
             }
         }
 

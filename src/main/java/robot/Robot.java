@@ -4,6 +4,8 @@ import common.bean.RobotInfoBean;
 import common.response.RobotInitializationResponse;
 import common.utils.Position;
 import robot.adapter.RobotInfoAdapter;
+import robot.command.CommandExectutor;
+import robot.command.CommandScheduler;
 import robot.communication.AdministratorRobotClient;
 import robot.communication.RobotGRPCClient;
 import robot.communication.RobotGRPCServer;
@@ -11,9 +13,7 @@ import robot.exception.ServerRequestException;
 import robot.model.PollutionDataStorage;
 import robot.model.RobotInfo;
 import robot.model.RobotNetwork;
-import robot.task.SensorDataPublisher;
-import robot.task.SensorDataReader;
-import robot.task.TaskManager;
+import robot.task.*;
 import utils.Logger;
 
 import java.util.Scanner;
@@ -26,6 +26,9 @@ public class Robot {
     private TaskManager taskManager;
     private PollutionDataStorage storage;
     private RobotGRPCServer server;
+    private RobotState state;
+    private CommandScheduler scheduler;
+    private CommandExectutor executor;
 
     public Robot() {
         RobotInfo currentRobot = new RobotInfo();
@@ -33,6 +36,9 @@ public class Robot {
         String serverAddress = "";
         this.taskManager = new TaskManager();
         this.storage = new PollutionDataStorage();
+        this.state = new RobotState();
+        this.scheduler = new CommandScheduler();
+        this.executor = new CommandExectutor(scheduler, state);
     }
 
     public void initialize() throws ServerRequestException {
@@ -106,6 +112,7 @@ public class Robot {
         System.out.println("Welcome to the robot application!");
 
         Robot robot = new Robot();
+        robot.state.turnOn();
 
         try {
             robot.initialize();
@@ -119,10 +126,12 @@ public class Robot {
         robot.notifyOtherRobots();
         robot.startPublishing();
 
-        System.out.println("Press enter to stop the robot");
-        Scanner scanner = new Scanner(System.in);
+        robot.taskManager.addTaskAndStart(new UserInputReader(robot.scheduler));
+        robot.taskManager.addTaskAndStart(new FaultSimulator(robot.scheduler));
 
-        scanner.nextLine();
+        while (robot.state.isRunning()) {
+            robot.executor.execute();
+        }
 
         robot.taskManager.stopAllTasksAndClear();
 
@@ -131,6 +140,54 @@ public class Robot {
 
         System.out.println("Robot stopped");
 
+    }
+
+    public static class RobotState {
+        private boolean isRunning;
+        private boolean needFixing;
+        private boolean isFixing;
+
+        public RobotState() {
+            this.isRunning = false;
+            this.needFixing = false;
+            this.isFixing = false;
+        }
+
+        public void turnOn() {
+            this.isRunning = true;
+        }
+
+        public void turnOff() {
+            this.isRunning = false;
+            this.isFixing = false;
+            this.needFixing = false;
+        }
+
+        public void faultOccurred() {
+            this.needFixing = true;
+        }
+
+        public void startFixing() {
+            this.needFixing = false;
+            this.isFixing = true;
+        }
+
+        public void hasBeenFixed() {
+            this.needFixing = false;
+            this.isFixing = false;
+        }
+
+        public boolean isRunning() {
+            return this.isRunning;
+        }
+
+        public boolean needFixing() {
+            return this.needFixing;
+        }
+
+        public boolean isFixing() {
+            return this.isFixing;
+        }
     }
 
 }
