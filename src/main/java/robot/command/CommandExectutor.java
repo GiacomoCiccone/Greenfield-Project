@@ -37,7 +37,7 @@ public class CommandExectutor {
                 state.turnOff();
                 break;
             case "sync-input":
-                System.out.println("Enter command (type 'help' for help):");
+                System.out.print("Enter command (type 'help' for help):");
                 break;
             case "help":
                 System.out.println("Available commands: fix, stop, help");

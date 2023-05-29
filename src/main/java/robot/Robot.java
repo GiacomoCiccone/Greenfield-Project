@@ -16,6 +16,9 @@ import robot.model.RobotNetwork;
 import robot.task.*;
 import utils.Logger;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Robot {
@@ -23,12 +26,12 @@ public class Robot {
     private RobotInfo currentRobot;
     private RobotNetwork otherRobots;
     private String serverAddress;
-    private TaskManager taskManager;
-    private PollutionDataStorage storage;
+    private final TaskManager taskManager;
+    private final PollutionDataStorage storage;
     private RobotGRPCServer server;
-    private RobotState state;
-    private CommandScheduler scheduler;
-    private CommandExectutor executor;
+    private final RobotState state;
+    private final CommandScheduler scheduler;
+    private final CommandExectutor executor;
 
     public Robot() {
         RobotInfo currentRobot = new RobotInfo();
@@ -49,9 +52,19 @@ public class Robot {
         System.out.print("Enter robot ID: ");
         String id = scanner.nextLine();
 
+        int port = 0;
         System.out.print("Enter robot port: ");
-        int port = scanner.nextInt();
-        scanner.nextLine(); // Consume newline left-over
+        while (true) {
+            try {
+                port = scanner.nextInt();
+                scanner.nextLine(); // Consume newline left-over
+                break;
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a numeric value.");
+                scanner.nextLine();
+                System.out.print("Enter robot port: ");
+            }
+        }
 
         System.out.print("Enter server address: ");
         String serverAddress = scanner.nextLine();
@@ -77,20 +90,15 @@ public class Robot {
     }
 
     private void startSensor() {
-        Logger.info("Starting sensor data reader");
         taskManager.addTaskAndStart(new SensorDataReader(storage));
     }
 
     private void notifyOtherRobots() {
         server = new RobotGRPCServer(currentRobot.getPort(), otherRobots);
         try {
-            Logger.info("Starting server");
             server.start();
         } catch (Exception e) {
-            Logger.error("Error while starting server.");
-            Logger.logException(e);
-
-            // Handle termination
+            throw new RuntimeException("Failed to start server", e);
         }
         if (otherRobots.getAllRobots().size() > 0) {
             Logger.info("Notifying other robots");
@@ -103,8 +111,15 @@ public class Robot {
     }
 
     private void startPublishing() {
-        Logger.info("Starting publisher");
         taskManager.addTaskAndStart(new SensorDataPublisher(currentRobot, storage));
+    }
+
+    private void startUserInputReader() {
+        taskManager.addTaskAndStart(new UserInputReader(scheduler));
+    }
+
+    private void startFaultSimulator() {
+        taskManager.addTaskAndStart(new FaultSimulator(scheduler));
     }
 
     public static void main(String[] args) {
@@ -115,19 +130,45 @@ public class Robot {
         robot.state.turnOn();
 
         try {
-            robot.initialize();
-        } catch (ServerRequestException e) {
-            System.out.println("Error while initializing robot. Please check logs for more details.");
-            Logger.error("Error while initializing robot: " + e.getMessage());
+            while (true) {
+                try {
+                    robot.initialize();
+                    break;
+                } catch (ServerRequestException e) {
+                    System.out.println("Error while initializing robot: " + e.getMessage());
+                    Logger.error("Error while initializing robot: " + e.getMessage());
+                    Logger.logException(e);
+
+                    System.out.print("Do you want to retry? (y/n): ");
+                    Scanner scanner = new Scanner(System.in);
+                    String retry = scanner.nextLine();
+                    if (retry.equals("n")) {
+                        return;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error while starting robot. Please check logs for more details.");
+            Logger.error("Error while starting robot: " + e.getMessage());
+            Logger.logException(e);
             return;
         }
 
-        robot.startSensor();
-        robot.notifyOtherRobots();
-        robot.startPublishing();
+        try {
+            robot.startSensor();
+            robot.notifyOtherRobots();
+            robot.startPublishing();
+        } catch (Exception e) {
+            System.out.println("Error while starting robot. Please check logs for more details.");
+            Logger.error("Error while starting robot: " + e.getMessage());
+            Logger.logException(e);
+            return;
+        }
 
-        robot.taskManager.addTaskAndStart(new UserInputReader(robot.scheduler));
-        robot.taskManager.addTaskAndStart(new FaultSimulator(robot.scheduler));
+        robot.startUserInputReader();
+        robot.startFaultSimulator();
+
+        System.out.println("Robot started successfully");
 
         while (robot.state.isRunning()) {
             robot.executor.execute();

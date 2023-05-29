@@ -1,6 +1,6 @@
 package administrator.server.dao;
 
-import administrator.exception.NotFoundException;
+import administrator.server.exception.NotFoundException;
 import administrator.server.model.PollutionDataEntity;
 import administrator.server.storage.PollutionStorage;
 import utils.Logger;

@@ -26,20 +26,18 @@ public class SensorDataPublisher extends RobotTaskBase {
         try {
             publisher = new MQTTPublisher();
         } catch (MqttException e) {
-            // Send stop signal to the robot
-            Logger.logException(e);
+            throw new RuntimeException("MQTT publisher could not be created", e);
         }
     }
 
     @Override
     public void run() {
-        Logger.debug("MQTT publisher started");
+        Logger.info("MQTT publisher started");
         try {
             publisher.connect();
             Logger.debug("MQTT publisher connected");
         } catch (MqttException e) {
-            // Send stop signal to the robot
-            Logger.logException(e);
+            throw new RuntimeException("MQTT publisher could not connect", e);
         }
         while (isRunning()) {
 
@@ -47,7 +45,6 @@ public class SensorDataPublisher extends RobotTaskBase {
             try {
                 Thread.sleep(PUBLISH_INTERVAL_MILLISECONDS);
             } catch (InterruptedException e) {
-                Logger.logException(e);
                 break;
             }
 
@@ -69,8 +66,7 @@ public class SensorDataPublisher extends RobotTaskBase {
             try {
                 publisher.publish(TOPIC_BASE_ADDRESS + robotInfo.getDistrict(), message);
             } catch (MqttException e) {
-                // Not necessary to stop the robot
-                Logger.logException(e);
+                Logger.warning("MQTT publisher could not publish message");
             }
 
         }
@@ -79,8 +75,7 @@ public class SensorDataPublisher extends RobotTaskBase {
             publisher.disconnect();
             Logger.debug("MQTT publisher disconnected");
         } catch (MqttException e) {
-            // Send stop signal to the robot
-            Logger.logException(e);
+            Logger.warning("MQTT publisher could not disconnect");
         }
         Logger.debug("MQTT publisher stopped");
     }

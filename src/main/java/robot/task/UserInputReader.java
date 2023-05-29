@@ -1,6 +1,7 @@
 package robot.task;
 
 import robot.command.CommandScheduler;
+import utils.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,6 +18,8 @@ public class UserInputReader extends RobotTaskBase {
 
     @Override
     public void run() {
+        Logger.info("User input reader started");
+
         while (isRunning()) {
 
             scheduler.schedule("sync-input");
@@ -39,9 +42,13 @@ public class UserInputReader extends RobotTaskBase {
 
                 String input = reader.readLine().toLowerCase();
                 scheduler.schedule(input);
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException e) {
+                Logger.warning(e.getMessage());
+            } catch (InterruptedException e) {
                 break;
             }
         }
+
+        Logger.info("User input reader stopped");
     }
 }

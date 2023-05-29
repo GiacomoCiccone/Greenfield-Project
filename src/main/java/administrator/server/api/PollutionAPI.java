@@ -1,6 +1,6 @@
 package administrator.server.api;
 
-import administrator.exception.NotFoundException;
+import administrator.server.exception.NotFoundException;
 import administrator.server.dao.PollutionDao;
 import administrator.server.model.PollutionDataEntity;
 import common.response.AveragePollutionValueResponse;

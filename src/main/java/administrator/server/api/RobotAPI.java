@@ -1,8 +1,8 @@
 package administrator.server.api;
 
-import administrator.exception.DataIntegrityViolationException;
-import administrator.exception.NotFoundException;
-import administrator.exception.InvalidRequestParametersException;
+import administrator.server.exception.DataIntegrityViolationException;
+import administrator.server.exception.NotFoundException;
+import administrator.server.exception.InvalidRequestParametersException;
 import administrator.server.adapter.RobotEntityAdapter;
 import administrator.server.dao.RobotDao;
 import administrator.server.model.RobotEntity;

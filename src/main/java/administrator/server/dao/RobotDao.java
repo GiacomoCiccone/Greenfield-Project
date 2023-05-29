@@ -1,7 +1,7 @@
 package administrator.server.dao;
 
-import administrator.exception.DataIntegrityViolationException;
-import administrator.exception.NotFoundException;
+import administrator.server.exception.DataIntegrityViolationException;
+import administrator.server.exception.NotFoundException;
 import administrator.server.model.RobotEntity;
 import administrator.server.storage.RobotStorage;
 import common.utils.Greenfield;

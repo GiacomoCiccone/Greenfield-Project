@@ -23,39 +23,39 @@ public class RobotInfo {
         this.position = new Position(0, 0);
     }
 
-    public synchronized String getId() {
+    public String getId() {
         return id;
     }
 
-    public synchronized int getPort() {
+    public int getPort() {
         return port;
     }
 
-    public synchronized String getAddress() {
+    public String getAddress() {
         return address;
     }
 
-    public synchronized Position getPosition() {
+    public Position getPosition() {
         return new Position(position.getX(), position.getY());
     }
 
-    public synchronized void setId(String id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public synchronized void setPort(int port) {
+    public void setPort(int port) {
         this.port = port;
     }
 
-    public synchronized void setAddress(String address) {
+    public void setAddress(String address) {
         this.address = address;
     }
 
-    public synchronized void setPosition(Position position) {
+    public void setPosition(Position position) {
         this.position = position;
     }
 
-    public synchronized int getDistrict() {
+    public int getDistrict() {
         return Greenfield.getDistrictFromPosition(position);
     }
 

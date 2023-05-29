@@ -1,6 +1,6 @@
 package administrator.server.validator;
 
-import administrator.exception.InvalidRequestParametersException;
+import administrator.server.exception.InvalidRequestParametersException;
 import common.request.RobotInitializationRequest;
 
 public class RobotInitializationRequestValidator {

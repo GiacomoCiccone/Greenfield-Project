@@ -18,7 +18,7 @@ public class SensorDataReader extends RobotTaskBase {
 
     @Override
     public void run() {
-        Logger.debug("Sensor data reader started");
+        Logger.info("Sensor data reader started");
 
         pm10Simulator.start();
         while (isRunning()) {
@@ -26,6 +26,6 @@ public class SensorDataReader extends RobotTaskBase {
         }
         pm10Simulator.stopMeGently();
 
-        Logger.debug("Sensor data reader stopped");
+        Logger.info("Sensor data reader stopped");
     }
 }
