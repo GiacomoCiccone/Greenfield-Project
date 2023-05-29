@@ -1,40 +1,50 @@
 package administrator.server;
 
-import administrator.server.infrastructure.JerseyServer;
-import administrator.server.infrastructure.MQTTClient;
+import administrator.server.infrastructure.rest.RESTServer;
+import administrator.server.infrastructure.mqtt.MQTTClient;
 import utils.Logger;
 
 import java.util.Scanner;
 
 public class Server {
 
-    private static final JerseyServer jerseyServer = new JerseyServer();
-    private static final MQTTClient mqttClient = new MQTTClient();
+    private final RESTServer restServer;
+    private final MQTTClient mqttClient;
+
+    public Server() {
+        restServer = new RESTServer();
+        mqttClient = new MQTTClient();
+    }
 
     public static void main(String[] args) {
         Logger.info("Starting server...");
 
-        jerseyServer.start();
-        mqttClient.connect();
+        try {
+            Server server = new Server();
+            server.restServer.start();
+            server.mqttClient.connectAndSubscribe();
 
-        Scanner scanner = new Scanner(System.in);
+            Scanner scanner = new Scanner(System.in);
 
-
-        while (true) {
-            System.out.print("Enter 'q' to quit: ");
-            try {
-                String c = scanner.nextLine().toLowerCase();
-                if (c.equals("q")) {
-                    break;
+            while (true) {
+                System.out.print("Enter 'q' to quit: ");
+                try {
+                    String c = scanner.nextLine().toLowerCase();
+                    if (c.equals("q")) {
+                        break;
+                    }
+                } catch (Exception e) {
+                    Logger.warning("Failed to read user input");
                 }
-            } catch (Exception e) {
-                Logger.logException(e);
             }
+
+            server.restServer.stop();
+            server.mqttClient.disconnectAndClose();
+
+            Logger.info("Server stopped");
+        } catch (Exception e) {
+            Logger.error("Server stopped with error: " + e.getMessage());
+            Logger.logException(e);
         }
-
-        jerseyServer.stop();
-        mqttClient.disconnect();
-
-        Logger.info("Server stopped");
     }
 }
