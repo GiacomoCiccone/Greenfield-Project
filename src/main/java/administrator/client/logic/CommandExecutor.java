@@ -110,7 +110,7 @@ public class CommandExecutor {
             if (averageResponse != null) {
                 return "Results: " +
                         "\n\t- Average value: " + averageResponse.getValue() +
-                        "\n\t- Total samples: " + averageResponse.getTotalSample();
+                        "\n\t- Total samples: " + (int) averageResponse.getTotalSample();
             } else {
                 Logger.warning("Error retrieving pollution data.");
                 return "Error retrieving pollution data.";
@@ -138,7 +138,7 @@ public class CommandExecutor {
             if (averageResponse != null) {
                 return "Results: " +
                         "\n\t- Average value: " + averageResponse.getValue() +
-                        "\n\t- Total samples: " + averageResponse.getTotalSample();
+                        "\n\t- Total samples: " + (int) averageResponse.getTotalSample();
             } else {
                 return "Error retrieving pollution data.";
             }

@@ -1,4 +1,6 @@
-package robot.model;
+package robot.core;
+
+import robot.model.RobotInfo;
 
 import java.util.ArrayList;
 import java.util.List;

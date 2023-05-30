@@ -1,13 +1,16 @@
 package robot.command;
 
 import robot.Robot;
+import robot.core.RobotContextProvider;
+import robot.core.RobotNetwork;
+import robot.core.RobotState;
 import utils.Logger;
 
 public class CommandExectutor {
     private final CommandScheduler scheduler;
-    private final Robot.RobotState state;
+    private final RobotState state;
 
-    public CommandExectutor(CommandScheduler scheduler, Robot.RobotState state) {
+    public CommandExectutor(CommandScheduler scheduler, RobotState state) {
         this.scheduler = scheduler;
         this.state = state;
     }

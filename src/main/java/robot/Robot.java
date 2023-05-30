@@ -9,23 +9,22 @@ import robot.command.CommandScheduler;
 import robot.communication.AdministratorRobotClient;
 import robot.communication.RobotGRPCClient;
 import robot.communication.RobotGRPCServer;
+import robot.core.RobotContextProvider;
+import robot.core.RobotNetwork;
+import robot.core.RobotState;
 import robot.exception.ServerRequestException;
+import robot.faultDetection.FaultDetectionHandler;
 import robot.model.PollutionDataStorage;
 import robot.model.RobotInfo;
-import robot.model.RobotNetwork;
 import robot.task.*;
 import utils.Logger;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Robot {
 
-    private RobotInfo currentRobot;
     private RobotNetwork otherRobots;
-    private String serverAddress;
     private final TaskManager taskManager;
     private final PollutionDataStorage storage;
     private RobotGRPCServer server;
@@ -73,9 +72,10 @@ public class Robot {
 
         RobotInitializationResponse response = administratorRobotClient.initializeRobot(id, "localhost", port);
 
-        // Initialize robot info
-        this.serverAddress = serverAddress;
-        this.currentRobot = new RobotInfo(id, port, "localhost", new Position(response.getX(), response.getY()));
+        // Initialize robot context
+        RobotInfo currentRobot = new RobotInfo(id, port, "localhost", new Position(response.getX(), response.getY()));
+        RobotContextProvider.setServerAddress(serverAddress);
+        RobotContextProvider.updateCurrentRobot(currentRobot);
         this.otherRobots = new RobotNetwork();
 
         // Add other robots to the network if any
@@ -94,7 +94,7 @@ public class Robot {
     }
 
     private void notifyOtherRobots() {
-        server = new RobotGRPCServer(currentRobot.getPort(), otherRobots);
+        server = new RobotGRPCServer(RobotContextProvider.getCurrentRobot().getPort(), otherRobots);
         try {
             server.start();
         } catch (Exception e) {
@@ -104,14 +104,14 @@ public class Robot {
             Logger.info("Notifying other robots");
             for (RobotInfo peerRobot : otherRobots.getAllRobots()) {
                 Logger.info("Notifying robot " + peerRobot.getId());
-                RobotGRPCClient client = new RobotGRPCClient(peerRobot.getAddress(), peerRobot.getPort());
+                RobotGRPCClient client = new RobotGRPCClient(peerRobot);
                 client.sendRobotInfo(peerRobot);
             }
         }
     }
 
     private void startPublishing() {
-        taskManager.addTaskAndStart(new SensorDataPublisher(currentRobot, storage));
+        taskManager.addTaskAndStart(new SensorDataPublisher(storage));
     }
 
     private void startUserInputReader() {
@@ -120,6 +120,10 @@ public class Robot {
 
     private void startFaultSimulator() {
         taskManager.addTaskAndStart(new FaultSimulator(scheduler));
+    }
+
+    private void startFaultDetectionHandler() {
+        taskManager.addTaskAndStart(new FaultDetectionHandler(otherRobots));
     }
 
     public static void main(String[] args) {
@@ -167,8 +171,9 @@ public class Robot {
 
         robot.startUserInputReader();
         robot.startFaultSimulator();
+        robot.startFaultDetectionHandler();
 
-        System.out.println("Robot started successfully");
+        System.out.println("Robot started successfully\n");
 
         while (robot.state.isRunning()) {
             robot.executor.execute();
@@ -176,59 +181,11 @@ public class Robot {
 
         robot.taskManager.stopAllTasksAndClear();
 
-        AdministratorRobotClient administratorRobotClient = new AdministratorRobotClient(robot.serverAddress);
-        administratorRobotClient.unregisterRobot(robot.currentRobot.getId());
+        AdministratorRobotClient administratorRobotClient = new AdministratorRobotClient();
+        administratorRobotClient.unregisterRobot();
+        robot.server.stop();
 
         System.out.println("Robot stopped");
 
     }
-
-    public static class RobotState {
-        private boolean isRunning;
-        private boolean needFixing;
-        private boolean isFixing;
-
-        public RobotState() {
-            this.isRunning = false;
-            this.needFixing = false;
-            this.isFixing = false;
-        }
-
-        public void turnOn() {
-            this.isRunning = true;
-        }
-
-        public void turnOff() {
-            this.isRunning = false;
-            this.isFixing = false;
-            this.needFixing = false;
-        }
-
-        public void faultOccurred() {
-            this.needFixing = true;
-        }
-
-        public void startFixing() {
-            this.needFixing = false;
-            this.isFixing = true;
-        }
-
-        public void hasBeenFixed() {
-            this.needFixing = false;
-            this.isFixing = false;
-        }
-
-        public boolean isRunning() {
-            return this.isRunning;
-        }
-
-        public boolean needFixing() {
-            return this.needFixing;
-        }
-
-        public boolean isFixing() {
-            return this.isFixing;
-        }
-    }
-
 }
