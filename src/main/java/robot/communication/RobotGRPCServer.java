@@ -7,7 +7,7 @@ import io.grpc.stub.StreamObserver;
 import robot.RobotServiceGrpc;
 import robot.RobotServiceOuterClass;
 import robot.adapter.RobotInfoAdapter;
-import robot.model.RobotNetwork;
+import robot.core.RobotNetwork;
 import utils.Logger;
 
 public class RobotGRPCServer {
@@ -46,7 +46,15 @@ public class RobotGRPCServer {
 
             network.addRobot(RobotInfoAdapter.adapt(request));
 
-            System.out.println(network);
+            responseObserver.onNext(Empty.newBuilder().build());
+            responseObserver.onCompleted();
+        }
+
+        @Override
+        public void removeRobot(RobotServiceOuterClass.RemoveRobotRequest request, StreamObserver<Empty> responseObserver) {
+            Logger.debug("Robot left the network: " + request.getId());
+
+            network.removeRobotById(request.getId());
 
             responseObserver.onNext(Empty.newBuilder().build());
             responseObserver.onCompleted();

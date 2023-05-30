@@ -5,8 +5,8 @@ import common.json.RobotPollutionDataJsonSchema;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import robot.adapter.MeasurementAdapter;
 import robot.communication.MQTTPublisher;
+import robot.core.RobotContextProvider;
 import robot.model.PollutionDataStorage;
-import robot.model.RobotInfo;
 import robot.simulator.Measurement;
 import utils.Logger;
 
@@ -16,12 +16,10 @@ import java.util.stream.Collectors;
 public class SensorDataPublisher extends RobotTaskBase {
     private static final String TOPIC_BASE_ADDRESS = "greenfield/pollution/district";
     public static final int PUBLISH_INTERVAL_MILLISECONDS = 15000;
-    RobotInfo robotInfo;
     PollutionDataStorage storage;
     MQTTPublisher publisher;
 
-    public SensorDataPublisher(RobotInfo robotInfo, PollutionDataStorage storage) {
-        this.robotInfo = robotInfo;
+    public SensorDataPublisher(PollutionDataStorage storage) {
         this.storage = storage;
         try {
             publisher = new MQTTPublisher();
@@ -59,12 +57,12 @@ public class SensorDataPublisher extends RobotTaskBase {
                     .map(MeasurementAdapter::adapt)
                     .collect(Collectors.toList());
 
-            RobotPollutionDataJsonSchema robotPollutionDataJsonSchema = new RobotPollutionDataJsonSchema(robotInfo.getId(), jsonSchemaList, System.currentTimeMillis());
+            RobotPollutionDataJsonSchema robotPollutionDataJsonSchema = new RobotPollutionDataJsonSchema(RobotContextProvider.getCurrentRobot().getId(), jsonSchemaList, System.currentTimeMillis());
 
             String message = new Gson().toJson(robotPollutionDataJsonSchema);
 
             try {
-                publisher.publish(TOPIC_BASE_ADDRESS + robotInfo.getDistrict(), message);
+                publisher.publish(TOPIC_BASE_ADDRESS + RobotContextProvider.getCurrentRobot().getDistrict(), message);
             } catch (MqttException e) {
                 Logger.warning("MQTT publisher could not publish message");
             }

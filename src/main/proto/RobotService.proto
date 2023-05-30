@@ -12,6 +12,11 @@ message RobotInfo {
   required int32 y = 5;
 }
 
+message RemoveRobotRequest {
+  required string id = 1;
+}
+
 service RobotService {
   rpc sendRobotInfo (RobotInfo) returns (google.protobuf.Empty);
+  rpc removeRobot (RemoveRobotRequest) returns (google.protobuf.Empty);
 }

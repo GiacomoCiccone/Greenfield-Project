@@ -23,6 +23,13 @@ public class RobotInfo {
         this.position = new Position(0, 0);
     }
 
+    public RobotInfo(RobotInfo other) {
+        this.id = other.getId();
+        this.port = other.getPort();
+        this.address = other.getAddress();
+        this.position = new Position(other.position);
+    }
+
     public String getId() {
         return id;
     }

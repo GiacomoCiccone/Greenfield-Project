@@ -47,7 +47,7 @@ public class PollutionAPI {
         }
 
         double sum = 0.0;
-        double totalSample = 0;
+        double totalSample = 0.0;
 
         for (PollutionDataEntity entry : pollutionAnalysisData) {
             for (PollutionDataEntity.Measurement measurement : entry.getPollutionData()) {
@@ -59,7 +59,7 @@ public class PollutionAPI {
         double average = sum / totalSample;
 
         Logger.debug("Returning average pollution data");
-        return Response.ok(new AveragePollutionValueResponse(average, (int) totalSample)).build();
+        return Response.ok(new AveragePollutionValueResponse(average, totalSample)).build();
     }
 
     @GET
@@ -89,7 +89,7 @@ public class PollutionAPI {
         }
 
         double sum = 0.0;
-        int totalSample = 0;
+        double totalSample = 0.0;
 
         for (PollutionDataEntity entry : pollutionAnalysisData) {
             for (PollutionDataEntity.Measurement measurement : entry.getPollutionData()) {
@@ -102,6 +102,6 @@ public class PollutionAPI {
         double average = sum / totalSample;
 
         Logger.debug("Returning average pollution data");
-        return Response.ok(new AveragePollutionValueResponse(average, (int) totalSample)).build();
+        return Response.ok(new AveragePollutionValueResponse(average, totalSample)).build();
     }
 }
