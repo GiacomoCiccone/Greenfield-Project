@@ -5,8 +5,9 @@ import common.json.RobotPollutionDataJsonSchema;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import robot.adapter.MeasurementAdapter;
 import robot.communication.MQTTPublisher;
-import robot.core.RobotContextProvider;
-import robot.model.PollutionDataStorage;
+import robot.core.RobotContext;
+import robot.pollutionData.PollutionDataRepository;
+import robot.pollutionData.PollutionDataStorage;
 import robot.simulator.Measurement;
 import utils.Logger;
 
@@ -16,11 +17,11 @@ import java.util.stream.Collectors;
 public class SensorDataPublisher extends RobotTaskBase {
     private static final String TOPIC_BASE_ADDRESS = "greenfield/pollution/district";
     public static final int PUBLISH_INTERVAL_MILLISECONDS = 15000;
-    PollutionDataStorage storage;
+    private final PollutionDataRepository rawTable;
     MQTTPublisher publisher;
 
-    public SensorDataPublisher(PollutionDataStorage storage) {
-        this.storage = storage;
+    public SensorDataPublisher(PollutionDataStorage rawTable) {
+        this.rawTable = rawTable;
         try {
             publisher = new MQTTPublisher();
         } catch (MqttException e) {
@@ -47,7 +48,7 @@ public class SensorDataPublisher extends RobotTaskBase {
             }
 
             // Get data from storage and check if there is any
-            List<Measurement> measurements = storage.getAllMeasurementsAndClear();
+            List<Measurement> measurements = rawTable.getAllMeasurementsFromLastRead();
             if (measurements == null || measurements.isEmpty()) {
                 continue;
             }
@@ -57,12 +58,12 @@ public class SensorDataPublisher extends RobotTaskBase {
                     .map(MeasurementAdapter::adapt)
                     .collect(Collectors.toList());
 
-            RobotPollutionDataJsonSchema robotPollutionDataJsonSchema = new RobotPollutionDataJsonSchema(RobotContextProvider.getCurrentRobot().getId(), jsonSchemaList, System.currentTimeMillis());
+            RobotPollutionDataJsonSchema robotPollutionDataJsonSchema = new RobotPollutionDataJsonSchema(RobotContext.getCurrentRobot().getId(), jsonSchemaList, System.currentTimeMillis());
 
             String message = new Gson().toJson(robotPollutionDataJsonSchema);
 
             try {
-                publisher.publish(TOPIC_BASE_ADDRESS + RobotContextProvider.getCurrentRobot().getDistrict(), message);
+                publisher.publish(TOPIC_BASE_ADDRESS + RobotContext.getCurrentRobot().getDistrict(), message);
             } catch (MqttException e) {
                 Logger.warning("MQTT publisher could not publish message");
             }

@@ -1,6 +1,6 @@
 package robot.task;
 
-import robot.model.PollutionDataStorage;
+import robot.pollutionData.PollutionDataRepository;
 import robot.simulator.PM10Simulator;
 import robot.simulator.PollutionBuffer;
 import utils.Logger;
@@ -8,12 +8,12 @@ import utils.Logger;
 public class SensorDataReader extends RobotTaskBase {
     private final PollutionBuffer pollutionBuffer;
     private final PM10Simulator pm10Simulator;
-    private final PollutionDataStorage pollutionDataStorage;
+    private final PollutionDataRepository rawTable;
 
-    public SensorDataReader(PollutionDataStorage pollutionDataStorage) {
+    public SensorDataReader(PollutionDataRepository rawTable) {
         this.pollutionBuffer = new PollutionBuffer();
         this.pm10Simulator = new PM10Simulator(pollutionBuffer);
-        this.pollutionDataStorage = pollutionDataStorage;
+        this.rawTable = rawTable;
     }
 
     @Override
@@ -22,7 +22,7 @@ public class SensorDataReader extends RobotTaskBase {
 
         pm10Simulator.start();
         while (isRunning()) {
-            pollutionDataStorage.addMeasurements(pollutionBuffer.readAllAndClean());
+            rawTable.addWindow(pollutionBuffer.readAllAndClean());
         }
         pm10Simulator.stopMeGently();
 

@@ -9,12 +9,12 @@ import robot.command.CommandScheduler;
 import robot.communication.AdministratorRobotClient;
 import robot.communication.RobotGRPCClient;
 import robot.communication.RobotGRPCServer;
-import robot.core.RobotContextProvider;
+import robot.core.RobotContext;
 import robot.core.RobotNetwork;
 import robot.core.RobotState;
 import robot.exception.ServerRequestException;
 import robot.faultDetection.FaultDetectionHandler;
-import robot.model.PollutionDataStorage;
+import robot.pollutionData.PollutionDataStorage;
 import robot.model.RobotInfo;
 import robot.task.*;
 import utils.Logger;
@@ -74,8 +74,8 @@ public class Robot {
 
         // Initialize robot context
         RobotInfo currentRobot = new RobotInfo(id, port, "localhost", new Position(response.getX(), response.getY()));
-        RobotContextProvider.setServerAddress(serverAddress);
-        RobotContextProvider.updateCurrentRobot(currentRobot);
+        RobotContext.setServerAddress(serverAddress);
+        RobotContext.updateCurrentRobot(currentRobot);
         this.otherRobots = new RobotNetwork();
 
         // Add other robots to the network if any
@@ -94,7 +94,7 @@ public class Robot {
     }
 
     private void notifyOtherRobots() {
-        server = new RobotGRPCServer(RobotContextProvider.getCurrentRobot().getPort(), otherRobots);
+        server = new RobotGRPCServer(RobotContext.getCurrentRobot().getPort(), otherRobots);
         try {
             server.start();
         } catch (Exception e) {
