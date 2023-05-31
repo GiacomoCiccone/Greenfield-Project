@@ -1,15 +1,17 @@
 package robot.communication;
 
 import io.grpc.*;
-import robot.faultDetection.FaultyRobotsQueue;
-import robot.model.RobotInfo;
+import robot.fault.detection.FaultyRobotsQueue;
+import robot.network.RobotPeer;
 import utils.Logger;
 
 public class TimeoutMiddleware implements ClientInterceptor {
-    public RobotInfo receiver;
+    private final RobotPeer receiver;
+    private final FaultyRobotsQueue queue;
 
-    public TimeoutMiddleware(RobotInfo receiver) {
+    public TimeoutMiddleware(RobotPeer receiver) {
         this.receiver = receiver;
+        queue = FaultyRobotsQueue.getQueue();
     }
 
     @Override
@@ -21,10 +23,10 @@ public class TimeoutMiddleware implements ClientInterceptor {
                     @Override
                     public void onClose(Status status, Metadata trailers) {
                         if (status.getCode() == Status.Code.DEADLINE_EXCEEDED || status.getCode() == Status.Code.UNAVAILABLE) {
-                            Logger.debug("Adding faulty robot to queue: " + receiver.getId());
-                            FaultyRobotsQueue.getQueue().addFaultyRobot(receiver);
+                            Logger.info("Adding faulty robot to queue: " + receiver.getId());
+                            queue.addFaultyRobot(receiver);
                         }
-                        super.onClose(status, trailers);
+                        responseListener.onClose(status, trailers);
                     }
                 };
                 super.start(listener, headers);

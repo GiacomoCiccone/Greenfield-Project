@@ -7,7 +7,6 @@ import com.sun.jersey.api.client.WebResource;
 import common.request.RobotInitializationRequest;
 import common.response.ErrorResponse;
 import common.response.RobotInitializationResponse;
-import robot.core.RobotContextProvider;
 import robot.exception.ServerRequestException;
 import utils.Logger;
 
@@ -16,16 +15,14 @@ import javax.ws.rs.core.Response;
 public class AdministratorRobotClient {
 
     private final Client client;
-    private final String serverAddress;
+    private static String serverAddress = "";
 
     public AdministratorRobotClient() {
-        this.serverAddress = RobotContextProvider.getServerAddress();
         this.client = Client.create();
     }
 
-    public AdministratorRobotClient(String serverAddress) {
-        this.serverAddress = serverAddress;
-        this.client = Client.create();
+    public static void setServerAddress(String address) {
+        serverAddress = address;
     }
 
     public RobotInitializationResponse initializeRobot(String id, String address, int port) throws ServerRequestException {
@@ -45,7 +42,7 @@ public class AdministratorRobotClient {
         return response.getEntity(RobotInitializationResponse.class);
     }
 
-    public void removeRobot(String id) {
+    public void removeRobot(String id) throws ServerRequestException {
         Logger.info("Sending request to server to remove robot.");
 
         WebResource webResource = client.resource(serverAddress + "/robot/remove/" + id);
@@ -54,16 +51,14 @@ public class AdministratorRobotClient {
         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
             ErrorResponse errorResponse = response.getEntity(ErrorResponse.class);
 
-            Logger.error(errorResponse.getMessage());
+            throw new ServerRequestException(errorResponse.getMessage());
         }
 
         Logger.info("Robot removed successfully.");
     }
 
-    public void unregisterRobot() {
+    public void unregisterSelf(String id) throws ServerRequestException {
         Logger.info("Sending request to server to unregister robot.");
-
-        String id = RobotContextProvider.getCurrentRobot().getId();
 
         WebResource webResource = client.resource(serverAddress + "/robot/remove/" + id);
         ClientResponse response = webResource.type("application/json").delete(ClientResponse.class);
@@ -71,7 +66,7 @@ public class AdministratorRobotClient {
         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
             ErrorResponse errorResponse = response.getEntity(ErrorResponse.class);
 
-            Logger.error(errorResponse.getMessage());
+            throw new ServerRequestException(errorResponse.getMessage());
         }
 
         Logger.info("Robot unregistered successfully.");

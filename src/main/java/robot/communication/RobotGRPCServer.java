@@ -6,18 +6,19 @@ import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
 import robot.RobotServiceGrpc;
 import robot.RobotServiceOuterClass;
-import robot.adapter.RobotInfoAdapter;
-import robot.core.RobotNetwork;
+import robot.adapter.RobotPeerAdapter;
+import robot.network.RobotNetwork;
+import robot.network.RobotNetworkProvider;
 import utils.Logger;
 
 public class RobotGRPCServer {
     private final int port;
     private final Server server;
 
-    public RobotGRPCServer(int port, RobotNetwork network) {
+    public RobotGRPCServer(int port) {
         this.port = port;
         this.server = ServerBuilder.forPort(port)
-                .addService(new RobotServiceImpl(network))
+                .addService(new RobotServiceImpl())
                 .build();
     }
 
@@ -34,17 +35,18 @@ public class RobotGRPCServer {
     }
 
     public static class RobotServiceImpl extends RobotServiceGrpc.RobotServiceImplBase {
+
         private final RobotNetwork network;
 
-        public RobotServiceImpl(RobotNetwork network) {
-            this.network = network;
+        public RobotServiceImpl() {
+            this.network = RobotNetworkProvider.getNetwork();
         }
 
         @Override
         public void sendRobotInfo(RobotServiceOuterClass.RobotInfo request, StreamObserver<Empty> responseObserver) {
             Logger.debug("New robot joined the network: " + request.getId());
 
-            network.addRobot(RobotInfoAdapter.adapt(request));
+            network.addRobot(RobotPeerAdapter.adapt(request));
 
             responseObserver.onNext(Empty.newBuilder().build());
             responseObserver.onCompleted();

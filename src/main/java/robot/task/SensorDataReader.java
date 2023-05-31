@@ -1,6 +1,7 @@
 package robot.task;
 
 import robot.pollutionData.PollutionDataRepository;
+import robot.pollutionData.PollutionDataRepositoryProvider;
 import robot.simulator.PM10Simulator;
 import robot.simulator.PollutionBuffer;
 import utils.Logger;
@@ -10,10 +11,10 @@ public class SensorDataReader extends RobotTaskBase {
     private final PM10Simulator pm10Simulator;
     private final PollutionDataRepository rawTable;
 
-    public SensorDataReader(PollutionDataRepository rawTable) {
+    public SensorDataReader() {
         this.pollutionBuffer = new PollutionBuffer();
         this.pm10Simulator = new PM10Simulator(pollutionBuffer);
-        this.rawTable = rawTable;
+        this.rawTable = PollutionDataRepositoryProvider.getRepository();
     }
 
     @Override

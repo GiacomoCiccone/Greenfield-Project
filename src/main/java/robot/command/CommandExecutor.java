@@ -1,18 +1,19 @@
 package robot.command;
 
-import robot.Robot;
-import robot.core.RobotContextProvider;
-import robot.core.RobotNetwork;
-import robot.core.RobotState;
+import robot.state.RobotState;
+import robot.state.RobotStateProvider;
+import robot.task.TaskManager;
 import utils.Logger;
 
-public class CommandExectutor {
+public class CommandExecutor {
     private final CommandScheduler scheduler;
     private final RobotState state;
+    private final TaskManager taskManager;
 
-    public CommandExectutor(CommandScheduler scheduler, RobotState state) {
+    public CommandExecutor(CommandScheduler scheduler, TaskManager taskManager) {
         this.scheduler = scheduler;
-        this.state = state;
+        this.state = RobotStateProvider.getState();
+        this.taskManager = taskManager;
     }
 
     public void execute() {
@@ -31,16 +32,21 @@ public class CommandExectutor {
 
         switch (command) {
             case "fix-automatic":
-                System.out.println("Ops, something went wrong, sending the robot to the mechanic...");
+                System.out.println("\nOps, something went wrong, sending the robot to the mechanic...");
             case "fix":
+                taskManager.stopAllTasksAndClear();
                 System.out.println("Robot fixed, resuming operation");
+                state.faultOccurred();
+                state.enteredMechanic();
+                state.leftMechanic();
+                taskManager.startTasks();
                 break;
             case "stop":
                 System.out.println("Stopping robot");
                 state.turnOff();
                 break;
             case "sync-input":
-                System.out.print("Enter command (type 'help' for help):");
+                System.out.print("Enter command (type 'help' for help): ");
                 break;
             case "help":
                 System.out.println("Available commands: fix, stop, help");

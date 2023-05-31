@@ -3,19 +3,22 @@ package robot;
 import common.bean.RobotInfoBean;
 import common.response.RobotInitializationResponse;
 import common.utils.Position;
-import robot.adapter.RobotInfoAdapter;
-import robot.command.CommandExectutor;
+import robot.adapter.RobotPeerAdapter;
+import robot.command.CommandExecutor;
 import robot.command.CommandScheduler;
 import robot.communication.AdministratorRobotClient;
 import robot.communication.RobotGRPCClient;
 import robot.communication.RobotGRPCServer;
-import robot.core.RobotContext;
-import robot.core.RobotNetwork;
-import robot.core.RobotState;
+import robot.context.RobotContextProvider;
+import robot.exception.ContextAlreadyInitializedException;
 import robot.exception.ServerRequestException;
-import robot.faultDetection.FaultDetectionHandler;
-import robot.pollutionData.PollutionDataStorage;
-import robot.model.RobotInfo;
+import robot.fault.detection.FaultDetectionHandler;
+import robot.network.RobotNetwork;
+import robot.network.RobotNetworkProvider;
+import robot.network.RobotPeer;
+import robot.state.RobotState;
+import robot.state.RobotStateProvider;
+import robot.state.StateType;
 import robot.task.*;
 import utils.Logger;
 
@@ -23,24 +26,18 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Robot {
-
-    private RobotNetwork otherRobots;
     private final TaskManager taskManager;
-    private final PollutionDataStorage storage;
     private RobotGRPCServer server;
+    private final CommandExecutor executor;
     private final RobotState state;
-    private final CommandScheduler scheduler;
-    private final CommandExectutor executor;
+    private final FaultDetectionHandler faultDetectionHandler;
 
     public Robot() {
-        RobotInfo currentRobot = new RobotInfo();
-        RobotNetwork otherRobots = new RobotNetwork();
-        String serverAddress = "";
-        this.taskManager = new TaskManager();
-        this.storage = new PollutionDataStorage();
-        this.state = new RobotState();
-        this.scheduler = new CommandScheduler();
-        this.executor = new CommandExectutor(scheduler, state);
+        CommandScheduler scheduler = new CommandScheduler();
+        this.taskManager = new TaskManager(scheduler);
+        this.executor = new CommandExecutor(scheduler, taskManager);
+        this.state = RobotStateProvider.getState();
+        this.faultDetectionHandler = new FaultDetectionHandler();
     }
 
     public void initialize() throws ServerRequestException {
@@ -68,41 +65,42 @@ public class Robot {
         System.out.print("Enter server address: ");
         String serverAddress = scanner.nextLine();
 
-        AdministratorRobotClient administratorRobotClient = new AdministratorRobotClient(serverAddress);
+        AdministratorRobotClient.setServerAddress(serverAddress);
 
+
+        AdministratorRobotClient administratorRobotClient = new AdministratorRobotClient();
         RobotInitializationResponse response = administratorRobotClient.initializeRobot(id, "localhost", port);
 
-        // Initialize robot context
-        RobotInfo currentRobot = new RobotInfo(id, port, "localhost", new Position(response.getX(), response.getY()));
-        RobotContext.setServerAddress(serverAddress);
-        RobotContext.updateCurrentRobot(currentRobot);
-        this.otherRobots = new RobotNetwork();
+        try {
+            RobotContextProvider.initializeContext(id, "localhost", port, new Position(response.getX(), response.getY()));
+        } catch (ContextAlreadyInitializedException e) {
+            Logger.warning("Robot context already initialized");
+        }
 
         // Add other robots to the network if any
         if (response.getOtherRobots() != null) {
+            RobotNetwork network = RobotNetworkProvider.getNetwork();
             for (RobotInfoBean robotInfoBean : response.getOtherRobots()) {
-                RobotInfo robotInfo = RobotInfoAdapter.adapt(robotInfoBean);
-                this.otherRobots.addRobot(robotInfo);
+                RobotPeer robotPeer = RobotPeerAdapter.adapt(robotInfoBean);
+                network.addRobot(robotPeer);
             }
+        }
+
+        server = new RobotGRPCServer(port);
+        try {
+            server.start();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to start grpc server", e);
         }
 
         Logger.info("Robot initialized successfully");
     }
 
-    private void startSensor() {
-        taskManager.addTaskAndStart(new SensorDataReader(storage));
-    }
-
     private void notifyOtherRobots() {
-        server = new RobotGRPCServer(RobotContext.getCurrentRobot().getPort(), otherRobots);
-        try {
-            server.start();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to start server", e);
-        }
-        if (otherRobots.getAllRobots().size() > 0) {
+        RobotNetwork network = RobotNetworkProvider.getNetwork();
+        if (network.hasRobots()) {
             Logger.info("Notifying other robots");
-            for (RobotInfo peerRobot : otherRobots.getAllRobots()) {
+            for (RobotPeer peerRobot : network.getAllRobots()) {
                 Logger.info("Notifying robot " + peerRobot.getId());
                 RobotGRPCClient client = new RobotGRPCClient(peerRobot);
                 client.sendRobotInfo(peerRobot);
@@ -110,33 +108,17 @@ public class Robot {
         }
     }
 
-    private void startPublishing() {
-        taskManager.addTaskAndStart(new SensorDataPublisher(storage));
-    }
-
-    private void startUserInputReader() {
-        taskManager.addTaskAndStart(new UserInputReader(scheduler));
-    }
-
-    private void startFaultSimulator() {
-        taskManager.addTaskAndStart(new FaultSimulator(scheduler));
-    }
-
-    private void startFaultDetectionHandler() {
-        taskManager.addTaskAndStart(new FaultDetectionHandler(otherRobots));
-    }
-
     public static void main(String[] args) {
         Logger.info("Starting robot");
         System.out.println("Welcome to the robot application!");
 
         Robot robot = new Robot();
-        robot.state.turnOn();
 
         try {
             while (true) {
                 try {
                     robot.initialize();
+                    robot.faultDetectionHandler.start();
                     break;
                 } catch (ServerRequestException e) {
                     System.out.println("Error while initializing robot: " + e.getMessage());
@@ -158,10 +140,9 @@ public class Robot {
             return;
         }
 
+
         try {
-            robot.startSensor();
             robot.notifyOtherRobots();
-            robot.startPublishing();
         } catch (Exception e) {
             System.out.println("Error while starting robot. Please check logs for more details.");
             Logger.error("Error while starting robot: " + e.getMessage());
@@ -169,22 +150,33 @@ public class Robot {
             return;
         }
 
-        robot.startUserInputReader();
-        robot.startFaultSimulator();
-        robot.startFaultDetectionHandler();
+        robot.taskManager.startTasks();
 
         System.out.println("Robot started successfully\n");
 
-        while (robot.state.isRunning()) {
+        // Robot running
+        robot.state.turnOn();
+
+        while (robot.state.getState() != StateType.OFF) {
             robot.executor.execute();
         }
 
         robot.taskManager.stopAllTasksAndClear();
 
         AdministratorRobotClient administratorRobotClient = new AdministratorRobotClient();
-        administratorRobotClient.unregisterRobot();
-        robot.server.stop();
+        try {
+            administratorRobotClient.unregisterSelf(RobotContextProvider.getContext().getId());
+        } catch (ServerRequestException e) {
+            Logger.warning("Failed to unregister robot: " + e.getMessage());
+        }
 
+        robot.server.stop();
+        robot.faultDetectionHandler.stopSignal();
+        try {
+            robot.faultDetectionHandler.join();
+        } catch (InterruptedException e) {
+            Logger.warning("Interrupted while waiting for fault detection handler to stop");
+        }
         System.out.println("Robot stopped");
 
     }

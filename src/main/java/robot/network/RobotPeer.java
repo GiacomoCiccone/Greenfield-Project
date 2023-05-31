@@ -1,29 +1,29 @@
-package robot.model;
+package robot.network;
 
 import common.utils.Greenfield;
 import common.utils.Position;
 
-public class RobotInfo {
+public class RobotPeer {
     String id;
     int port;
     String address;
     Position position;
 
-    public RobotInfo(String id, int port, String address, Position position) {
+    public RobotPeer(String id, int port, String address, Position position) {
         this.id = id;
         this.port = port;
         this.address = address;
         this.position = position;
     }
 
-    public RobotInfo() {
+    public RobotPeer() {
         this.id = "";
         this.port = 0;
         this.address = "";
         this.position = new Position(0, 0);
     }
 
-    public RobotInfo(RobotInfo other) {
+    public RobotPeer(RobotPeer other) {
         this.id = other.getId();
         this.port = other.getPort();
         this.address = other.getAddress();
