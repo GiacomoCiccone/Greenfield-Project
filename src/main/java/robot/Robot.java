@@ -103,7 +103,7 @@ public class Robot {
             for (RobotPeer peerRobot : network.getAllRobots()) {
                 Logger.info("Notifying robot " + peerRobot.getId());
                 RobotGRPCClient client = new RobotGRPCClient(peerRobot);
-                client.sendRobotInfo(peerRobot);
+                client.sendRobotInfo();
             }
         }
     }

@@ -1,5 +1,6 @@
 package robot.command;
 
+import robot.fault.handler.AccessControlAlgorithm;
 import robot.state.RobotState;
 import robot.state.RobotStateProvider;
 import robot.task.TaskManager;
@@ -35,10 +36,26 @@ public class CommandExecutor {
                 System.out.println("\nOps, something went wrong, sending the robot to the mechanic...");
             case "fix":
                 taskManager.stopAllTasksAndClear();
-                System.out.println("Robot fixed, resuming operation");
+                System.out.println("Waiting to enter mechanic...");
                 state.faultOccurred();
+
+                AccessControlAlgorithm algorithm = new AccessControlAlgorithm();
+                algorithm.getAccess();
                 state.enteredMechanic();
+
+                System.out.println("Robot entered mechanic");
+
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    Logger.error("Error while sleeping");
+                    Logger.logException(e);
+                }
+
                 state.leftMechanic();
+                algorithm.releaseAccess();
+
+                System.out.println("Robot fixed");
                 taskManager.startTasks();
                 break;
             case "stop":

@@ -11,8 +11,9 @@ public class RobotState {
     private boolean isRunning = false;
     private boolean isBroken = false;
     private boolean isFixing = false;
+    private long lastFaultTime = 0;
 
-    public void turnOn() {
+    public synchronized void turnOn() {
         Logger.info("Robot has been turned on");
         if (getState() != StateType.OFF) {
             throw new IllegalStateTransitionException("Cannot turn on robot when it is not off");
@@ -22,7 +23,7 @@ public class RobotState {
         isFixing = false;
     }
 
-    public void turnOff() {
+    public synchronized void turnOff() {
         Logger.info("Robot has been turned off");
         if (getState() != StateType.RUNNING) {
             throw new IllegalStateTransitionException("Cannot turn off robot when it is not running");
@@ -32,7 +33,7 @@ public class RobotState {
         isFixing = false;
     }
 
-    public void faultOccurred() {
+    public synchronized void faultOccurred() {
         Logger.info("Robot is broken");
         if (getState() != StateType.RUNNING) {
             throw new IllegalStateTransitionException("Cannot fault robot when it is not running");
@@ -42,7 +43,7 @@ public class RobotState {
         isFixing = false;
     }
 
-    public void enteredMechanic() {
+    public synchronized void enteredMechanic() {
         Logger.info("Robot entered mechanic");
         if (getState() != StateType.BROKEN) {
             throw new IllegalStateTransitionException("Cannot enter mechanic when robot is not broken");
@@ -52,7 +53,7 @@ public class RobotState {
         isRunning = true;
     }
 
-    public void leftMechanic() {
+    public synchronized void leftMechanic() {
         Logger.info("Robot left mechanic");
         if (getState() != StateType.FIXING) {
             throw new IllegalStateTransitionException("Cannot leave mechanic when robot is not fixing");
@@ -60,6 +61,14 @@ public class RobotState {
         isRunning = true;
         isFixing = false;
         isBroken = false;
+    }
+
+    public synchronized long getLastFaultTime() {
+        if (getState() != StateType.BROKEN) {
+            throw new IllegalStateTransitionException("Cannot get last fault time when robot is not broken");
+        }
+
+        return lastFaultTime;
     }
 
     public synchronized StateType getState() {
