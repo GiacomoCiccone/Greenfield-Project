@@ -2,7 +2,7 @@ package administrator.server;
 
 import administrator.server.infrastructure.rest.RESTServer;
 import administrator.server.infrastructure.mqtt.MQTTClient;
-import utils.Logger;
+import common.utils.Logger;
 
 import java.util.Scanner;
 

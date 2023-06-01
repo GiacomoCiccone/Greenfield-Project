@@ -3,7 +3,7 @@ package administrator.server.dao;
 import administrator.server.exception.NotFoundException;
 import administrator.server.model.PollutionDataEntity;
 import administrator.server.storage.PollutionStorage;
-import utils.Logger;
+import common.utils.Logger;
 
 import java.util.ArrayList;
 import java.util.List;

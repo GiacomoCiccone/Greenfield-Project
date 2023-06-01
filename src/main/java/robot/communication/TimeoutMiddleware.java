@@ -3,7 +3,7 @@ package robot.communication;
 import io.grpc.*;
 import robot.fault.detection.FaultyRobotsQueue;
 import robot.network.RobotPeer;
-import utils.Logger;
+import common.utils.Logger;
 
 public class TimeoutMiddleware implements ClientInterceptor {
     private final RobotPeer receiver;

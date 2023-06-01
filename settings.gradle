@@ -1,2 +1,3 @@
 rootProject.name = 'GreenfieldProject'
+include 'module'
 

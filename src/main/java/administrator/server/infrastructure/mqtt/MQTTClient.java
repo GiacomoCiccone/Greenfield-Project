@@ -1,7 +1,7 @@
 package administrator.server.infrastructure.mqtt;
 
 import org.eclipse.paho.client.mqttv3.*;
-import utils.Logger;
+import common.utils.Logger;
 
 import java.util.Arrays;
 

@@ -16,7 +16,7 @@ import robot.network.RobotNetworkProvider;
 import robot.state.RobotState;
 import robot.state.RobotStateProvider;
 import robot.state.StateType;
-import utils.Logger;
+import common.utils.Logger;
 
 public class RobotGRPCServer {
     private final int port;
@@ -111,6 +111,16 @@ public class RobotGRPCServer {
                     }
                 }
             }
+        }
+
+        @Override
+        public void leaveNetwork(RobotServiceOuterClass.LeaveNetworkRequest request, StreamObserver<Empty> responseObserver) {
+            Logger.info("Robot " + request.getId() + " left the network in a controlled manner");
+
+            network.removeRobotById(request.getId());
+
+            responseObserver.onNext(Empty.newBuilder().build());
+            responseObserver.onCompleted();
         }
     }
 }

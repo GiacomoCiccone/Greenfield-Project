@@ -5,7 +5,7 @@ import administrator.server.dao.PollutionDao;
 import administrator.server.model.PollutionDataEntity;
 import common.response.AveragePollutionValueResponse;
 import common.response.ErrorResponse;
-import utils.Logger;
+import common.utils.Logger;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

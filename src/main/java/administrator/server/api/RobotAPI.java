@@ -14,7 +14,7 @@ import common.response.GetAllRobotResponse;
 import common.response.RobotInitializationResponse;
 import common.utils.Greenfield;
 import common.utils.Position;
-import utils.Logger;
+import common.utils.Logger;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;

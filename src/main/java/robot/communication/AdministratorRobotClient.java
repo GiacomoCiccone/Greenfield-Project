@@ -8,7 +8,7 @@ import common.request.RobotInitializationRequest;
 import common.response.ErrorResponse;
 import common.response.RobotInitializationResponse;
 import robot.exception.ServerRequestException;
-import utils.Logger;
+import common.utils.Logger;
 
 import javax.ws.rs.core.Response;
 

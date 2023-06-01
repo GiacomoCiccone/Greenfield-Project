@@ -7,7 +7,7 @@ import administrator.server.model.PollutionDataEntity;
 import com.google.gson.Gson;
 import common.json.RobotPollutionDataJsonSchema;
 import org.eclipse.paho.client.mqttv3.*;
-import utils.Logger;
+import common.utils.Logger;
 
 public class MQTTSubscriberCallback implements MqttCallback {
 

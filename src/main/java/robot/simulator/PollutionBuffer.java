@@ -1,7 +1,7 @@
 package robot.simulator;
 
 
-import utils.Logger;
+import common.utils.Logger;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

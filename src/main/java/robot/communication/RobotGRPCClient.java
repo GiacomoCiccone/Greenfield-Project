@@ -8,9 +8,10 @@ import robot.RobotServiceGrpc;
 import robot.RobotServiceOuterClass;
 import robot.adapter.RobotPeerAdapter;
 import robot.context.RobotContextProvider;
+import robot.network.RobotNetworkProvider;
 import robot.network.RobotPeer;
 import robot.state.RobotStateProvider;
-import utils.Logger;
+import common.utils.Logger;
 
 import java.util.List;
 
@@ -95,7 +96,13 @@ public class RobotGRPCClient {
                 .build();
 
         RobotServiceGrpc.RobotServiceStub asyncStub = RobotServiceGrpc.newStub(channel);
-        asyncStub.withDeadlineAfter(15000, java.util.concurrent.TimeUnit.MILLISECONDS)
+
+        int waitingOksSize;
+        synchronized (waitingOks) {
+            waitingOksSize = waitingOks.size();
+        }
+        int timeout = waitingOksSize * 10000 + 10000;
+        asyncStub.withDeadlineAfter(timeout, java.util.concurrent.TimeUnit.MILLISECONDS)
                 .askAccess(request, new StreamObserver<Empty>() {
                     @Override
                     public void onNext(Empty response) {
@@ -117,6 +124,38 @@ public class RobotGRPCClient {
 
                     @Override
                     public void onCompleted() {
+                        channel.shutdown();
+                    }
+                });
+    }
+
+    public void leaveNetwork() {
+        ManagedChannel channel = ManagedChannelBuilder.forAddress(receiver.getAddress(), receiver.getPort())
+                .intercept(new TimeoutMiddleware(receiver))
+                .usePlaintext()
+                .build();
+        RobotPeer robotPeer = RobotContextProvider.getContext().getRobotInfo();
+        RobotServiceGrpc.RobotServiceStub asyncStub = RobotServiceGrpc.newStub(channel);
+
+        RobotServiceOuterClass.LeaveNetworkRequest request = RobotServiceOuterClass.LeaveNetworkRequest.newBuilder()
+                .setId(robotPeer.getId())
+                .build();
+        asyncStub.withDeadlineAfter(1000, java.util.concurrent.TimeUnit.MILLISECONDS)
+                .leaveNetwork(request, new StreamObserver<Empty>() {
+                    @Override
+                    public void onNext(Empty response) {
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        Logger.warning("Error sending robot info to " + robotPeer.getId());
+                        Logger.logException((Exception) throwable);
+                        channel.shutdown();
+                    }
+
+                    @Override
+                    public void onCompleted() {
+                        Logger.debug("Leave network message sent to " + robotPeer.getId());
                         channel.shutdown();
                     }
                 });

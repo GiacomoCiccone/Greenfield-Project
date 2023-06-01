@@ -1,10 +1,7 @@
 package robot.state;
 
 import robot.exception.IllegalStateTransitionException;
-import utils.Logger;
-
-import java.util.ArrayList;
-import java.util.List;
+import common.utils.Logger;
 
 public class RobotState {
 

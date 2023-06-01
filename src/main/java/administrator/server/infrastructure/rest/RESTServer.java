@@ -2,7 +2,7 @@ package administrator.server.infrastructure.rest;
 
 import com.sun.jersey.api.container.httpserver.HttpServerFactory;
 import com.sun.net.httpserver.HttpServer;
-import utils.Logger;
+import common.utils.Logger;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;

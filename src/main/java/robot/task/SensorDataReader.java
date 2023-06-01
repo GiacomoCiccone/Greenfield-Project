@@ -4,7 +4,7 @@ import robot.pollutionData.PollutionDataRepository;
 import robot.pollutionData.PollutionDataRepositoryProvider;
 import robot.simulator.PM10Simulator;
 import robot.simulator.PollutionBuffer;
-import utils.Logger;
+import common.utils.Logger;
 
 public class SensorDataReader extends RobotTaskBase {
     private final PollutionBuffer pollutionBuffer;

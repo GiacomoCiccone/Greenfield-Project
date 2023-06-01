@@ -5,7 +5,7 @@ import robot.network.RobotNetwork;
 import robot.network.RobotNetworkObserver;
 import robot.network.RobotNetworkProvider;
 import robot.network.RobotPeer;
-import utils.Logger;
+import common.utils.Logger;
 
 import java.util.ArrayList;
 import java.util.List;

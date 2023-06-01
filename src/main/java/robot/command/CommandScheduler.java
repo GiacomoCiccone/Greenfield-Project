@@ -1,6 +1,6 @@
 package robot.command;
 
-import utils.Logger;
+import common.utils.Logger;
 
 public class CommandScheduler {
     private String currentCommand;

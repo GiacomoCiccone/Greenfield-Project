@@ -1,6 +1,6 @@
 package robot.network;
 
-import utils.Logger;
+import common.utils.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,8 +20,6 @@ public class RobotNetwork {
         observers.forEach(observer -> observer.robotAdded(new RobotPeer(robot)));
 
         Logger.info("Robot network's size: " + robots.size());
-
-        System.out.println("\n" + robots.toString());
     }
 
     public synchronized void removeRobot(RobotPeer robot) {
@@ -30,8 +28,6 @@ public class RobotNetwork {
             observers.forEach(observer -> observer.robotRemoved(new RobotPeer(robot)));
         }
         Logger.info("Robot network's size: " + robots.size());
-
-        System.out.println("\n" + robots.toString());
     }
 
     public synchronized void removeRobotById(String id) {

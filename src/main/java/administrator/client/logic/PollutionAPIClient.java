@@ -6,7 +6,7 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import common.response.AveragePollutionValueResponse;
 import common.response.ErrorResponse;
-import utils.Logger;
+import common.utils.Logger;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;

@@ -6,7 +6,7 @@ import robot.exception.ServerRequestException;
 import robot.network.RobotNetwork;
 import robot.network.RobotNetworkProvider;
 import robot.network.RobotPeer;
-import utils.Logger;
+import common.utils.Logger;
 
 public class FaultDetectionHandler extends Thread {
     private final RobotNetwork network;

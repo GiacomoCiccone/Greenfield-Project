@@ -20,7 +20,7 @@ import robot.state.RobotState;
 import robot.state.RobotStateProvider;
 import robot.state.StateType;
 import robot.task.*;
-import utils.Logger;
+import common.utils.Logger;
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -108,6 +108,18 @@ public class Robot {
         }
     }
 
+    private void notifyOtherRobotsStop() {
+        RobotNetwork network = RobotNetworkProvider.getNetwork();
+        if (network.hasRobots()) {
+            Logger.info("Notifying other robots of stop");
+            for (RobotPeer peerRobot : network.getAllRobots()) {
+                Logger.info("Notifying robot " + peerRobot.getId());
+                RobotGRPCClient client = new RobotGRPCClient(peerRobot);
+                client.leaveNetwork();
+            }
+        }
+    }
+
     public static void main(String[] args) {
         Logger.info("Starting robot");
         System.out.println("Welcome to the robot application!");
@@ -170,10 +182,12 @@ public class Robot {
             Logger.warning("Failed to unregister robot: " + e.getMessage());
         }
 
+        robot.notifyOtherRobotsStop();
+
         robot.server.stop();
         robot.faultDetectionHandler.stopSignal();
         try {
-            robot.faultDetectionHandler.join();
+            robot.faultDetectionHandler.join(); // Wait for fault detection handler to stop
         } catch (InterruptedException e) {
             Logger.warning("Interrupted while waiting for fault detection handler to stop");
         }

@@ -1,7 +1,7 @@
 package robot.task;
 
 import robot.command.CommandScheduler;
-import utils.Logger;
+import common.utils.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;

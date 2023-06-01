@@ -1,14 +1,13 @@
 package administrator.client.logic;
 
 import administrator.client.Exception.ResponseException;
-import com.google.gson.Gson;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import common.bean.RobotInfoBean;
 import common.response.ErrorResponse;
 import common.response.GetAllRobotResponse;
-import utils.Logger;
+import common.utils.Logger;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;

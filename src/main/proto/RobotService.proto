@@ -21,8 +21,13 @@ message AccessRequest {
   required int64 timestamp = 2;
 }
 
+message LeaveNetworkRequest {
+  required string id = 1;
+}
+
 service RobotService {
   rpc sendRobotInfo (RobotInfo) returns (google.protobuf.Empty);
   rpc removeRobot (RemoveRobotRequest) returns (google.protobuf.Empty);
   rpc askAccess (AccessRequest) returns (google.protobuf.Empty);
+  rpc leaveNetwork (LeaveNetworkRequest) returns (google.protobuf.Empty);
 }
