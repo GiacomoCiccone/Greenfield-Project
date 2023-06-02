@@ -26,8 +26,7 @@ public class CommandExecutor {
             executeCommand(command);
             scheduler.clearCommand();
         } catch (InterruptedException e) {
-            Logger.error("Error while scheduling command");
-            Logger.logException(e);
+            Logger.warning("Error while scheduling command");
         }
     }
 

@@ -10,7 +10,7 @@ public class CommandScheduler {
             try {
                 wait();
             } catch (InterruptedException e) {
-                Logger.logException(e);
+                Logger.error("Failed to wait for command scheduler");
                 return;
             }
         }

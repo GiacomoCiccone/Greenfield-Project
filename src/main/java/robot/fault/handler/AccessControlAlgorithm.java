@@ -4,7 +4,7 @@ import robot.communication.RobotGRPCClient;
 import robot.network.RobotNetwork;
 import robot.network.RobotNetworkObserver;
 import robot.network.RobotNetworkProvider;
-import robot.network.RobotPeer;
+import robot.network.RobotInfo;
 import common.utils.Logger;
 
 import java.util.ArrayList;
@@ -17,18 +17,19 @@ public class AccessControlAlgorithm implements RobotNetworkObserver {
 
     public AccessControlAlgorithm() {
         this.queue = WaitingRobotsQueue.getQueue();
+        this.queue.clear();
         this.network = RobotNetworkProvider.getNetwork();
         this.waitingOks = new ArrayList<>();
         network.addObserver(this);
     }
 
     public void getAccess() {
-        List<RobotPeer> robots = network.getAllRobots();
+        List<RobotInfo> robots = network.getAllRobots();
         if (robots.isEmpty()) {
             return;
         }
 
-        for (RobotPeer robot : robots) {
+        for (RobotInfo robot : robots) {
             synchronized (waitingOks) {
                 Logger.info("Robot waiting for access by " + robot.getId());
                 waitingOks.add(robot.getId());
@@ -73,7 +74,7 @@ public class AccessControlAlgorithm implements RobotNetworkObserver {
 
 
     @Override
-    public void robotAdded(RobotPeer robot) {
+    public void robotAdded(RobotInfo robot) {
         synchronized (waitingOks) {
             Logger.info("Robot waiting for access by " + robot.getId());
             waitingOks.add(robot.getId());
@@ -81,11 +82,13 @@ public class AccessControlAlgorithm implements RobotNetworkObserver {
     }
 
     @Override
-    public void robotRemoved(RobotPeer robot) {
+    public void robotRemoved(RobotInfo robot) {
         synchronized (waitingOks) {
             Logger.info("Robot removed from waiting for access by " + robot.getId());
-            waitingOks.remove(robot.getId());
-            waitingOks.notify();
+            if (waitingOks.remove(robot.getId())) {
+                waitingOks.notify();
+            }
         }
+        queue.removeIfPresentById(robot.getId());
     }
 }

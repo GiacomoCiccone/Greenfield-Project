@@ -2,8 +2,7 @@ package robot.context;
 
 import common.utils.Greenfield;
 import common.utils.Position;
-import robot.Robot;
-import robot.network.RobotPeer;
+import robot.network.RobotInfo;
 
 public class RobotContext {
     private final String id;
@@ -38,8 +37,8 @@ public class RobotContext {
         return Greenfield.getDistrictFromPosition(position);
     }
 
-    public synchronized RobotPeer getRobotInfo() {
-        return new RobotPeer(id, port, address, position);
+    public synchronized RobotInfo getRobotInfo() {
+        return new RobotInfo(id, port, address, position);
     }
 
 }

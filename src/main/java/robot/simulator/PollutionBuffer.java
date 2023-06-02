@@ -31,7 +31,8 @@ public class PollutionBuffer implements Buffer {
             try {
                 wait(); // wait for the consumer to empty the buffer
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                Logger.warning("Failed to wait for buffer to empty");
+                return;
             }
         }
 
@@ -48,7 +49,8 @@ public class PollutionBuffer implements Buffer {
             try {
                 wait(); // wait for the producer to fill the buffer
             } catch (InterruptedException e) {
-                Logger.logException(e);
+                Logger.warning("Failed to wait for buffer to fill");
+                return new ArrayList<>();
             }
         }
 

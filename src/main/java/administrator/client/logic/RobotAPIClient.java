@@ -17,7 +17,7 @@ public class RobotAPIClient {
     private static final String API_URL = "http://localhost:8080";
 
     public List<RobotInfoBean> getAllRobots() throws ResponseException {
-        Logger.debug("Sending request to get robot list");
+        Logger.info("Sending request to get robot list");
 
         WebResource webResource = getClientResource("/robot/list");
         ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);

@@ -5,7 +5,7 @@ import robot.communication.RobotGRPCClient;
 import robot.exception.ServerRequestException;
 import robot.network.RobotNetwork;
 import robot.network.RobotNetworkProvider;
-import robot.network.RobotPeer;
+import robot.network.RobotInfo;
 import common.utils.Logger;
 
 public class FaultDetectionHandler extends Thread {
@@ -18,25 +18,25 @@ public class FaultDetectionHandler extends Thread {
         this.queue = FaultyRobotsQueue.getQueue();
     }
 
-    public void handleFaultyRobot(RobotPeer deadRobotPeer) {
-        Logger.info("Handling faulty robot: " + deadRobotPeer.getId());
+    public void handleFaultyRobot(RobotInfo deadRobotInfo) {
+        Logger.info("Handling faulty robot: " + deadRobotInfo.getId());
 
-        if (network.hasRobotWithId(deadRobotPeer.getId())) {
-            network.removeRobotById(deadRobotPeer.getId());
+        if (network.hasRobotWithId(deadRobotInfo.getId())) {
+            network.removeRobotById(deadRobotInfo.getId());
         }
 
         if (network.hasRobots()) {
-            for (RobotPeer peer : network.getAllRobots()) {
+            for (RobotInfo peer : network.getAllRobots()) {
                 RobotGRPCClient client = new RobotGRPCClient(peer);
                 Logger.info("Sending faulty robot info to peer: " + peer.getId());
-                client.removeRobot(deadRobotPeer.getId());
+                client.removeRobot(deadRobotInfo.getId());
             }
         }
 
         AdministratorRobotClient adminClient = new AdministratorRobotClient();
 
         try {
-            adminClient.removeRobot(deadRobotPeer.getId());
+            adminClient.removeRobot(deadRobotInfo.getId());
         } catch (ServerRequestException e) {
             Logger.warning(e.getMessage());
         }
@@ -47,7 +47,7 @@ public class FaultDetectionHandler extends Thread {
         Logger.info("Fault detection handler started");
         while (running || queue.hasFaultyRobots()) {
             try {
-                RobotPeer faultyRobot = queue.getNextFaultyRobot();
+                RobotInfo faultyRobot = queue.getNextFaultyRobot();
 
                 handleFaultyRobot(faultyRobot);
 
@@ -67,8 +67,9 @@ public class FaultDetectionHandler extends Thread {
         super.start();
     }
 
-    public synchronized void stopSignal() {
+    public synchronized void stopSignal() throws InterruptedException {
         running = false;
         interrupt();
+        join();
     }
 }

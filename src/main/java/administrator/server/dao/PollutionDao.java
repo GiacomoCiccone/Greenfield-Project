@@ -24,7 +24,7 @@ public class PollutionDao {
             storageRef.getPollutionData().put(robotId, new ArrayList<PollutionDataEntity>());
         }
 
-        Logger.debug("Adding pollution data entry for robot with id " + robotId);
+        Logger.info("Adding pollution data entry for robot with id " + robotId);
         storageRef.getPollutionData().get(robotId).add(pollutionDataEntity);
     }
 

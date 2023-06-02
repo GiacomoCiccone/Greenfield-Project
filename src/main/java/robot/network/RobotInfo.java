@@ -3,27 +3,27 @@ package robot.network;
 import common.utils.Greenfield;
 import common.utils.Position;
 
-public class RobotPeer {
+public class RobotInfo {
     String id;
     int port;
     String address;
     Position position;
 
-    public RobotPeer(String id, int port, String address, Position position) {
+    public RobotInfo(String id, int port, String address, Position position) {
         this.id = id;
         this.port = port;
         this.address = address;
         this.position = position;
     }
 
-    public RobotPeer() {
+    public RobotInfo() {
         this.id = "";
         this.port = 0;
         this.address = "";
         this.position = new Position(0, 0);
     }
 
-    public RobotPeer(RobotPeer other) {
+    public RobotInfo(RobotInfo other) {
         this.id = other.getId();
         this.port = other.getPort();
         this.address = other.getAddress();

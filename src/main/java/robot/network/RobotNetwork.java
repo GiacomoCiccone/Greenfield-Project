@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RobotNetwork {
-    private final List<RobotPeer> robots;
+    private final List<RobotInfo> robots;
     private final List<RobotNetworkObserver> observers;
 
     RobotNetwork() {
@@ -14,24 +14,24 @@ public class RobotNetwork {
         this.observers = new ArrayList<>();
     }
 
-    public synchronized void addRobot(RobotPeer robot) {
+    public synchronized void addRobot(RobotInfo robot) {
         Logger.info("Adding robot to network: " + robot.getId());
         robots.add(robot);
-        observers.forEach(observer -> observer.robotAdded(new RobotPeer(robot)));
+        observers.forEach(observer -> observer.robotAdded(new RobotInfo(robot)));
 
         Logger.info("Robot network's size: " + robots.size());
     }
 
-    public synchronized void removeRobot(RobotPeer robot) {
+    public synchronized void removeRobot(RobotInfo robot) {
         if (robots.remove(robot)) {
             Logger.info("Removing robot from network: " + robot.getId());
-            observers.forEach(observer -> observer.robotRemoved(new RobotPeer(robot)));
+            observers.forEach(observer -> observer.robotRemoved(new RobotInfo(robot)));
         }
         Logger.info("Robot network's size: " + robots.size());
     }
 
     public synchronized void removeRobotById(String id) {
-        for (RobotPeer robot : robots) {
+        for (RobotInfo robot : robots) {
             if (robot.getId().equals(id)) {
                 removeRobot(robot);
                 return;
@@ -39,20 +39,20 @@ public class RobotNetwork {
         }
     }
 
-    public synchronized RobotPeer getRobotById(String id) {
-        for (RobotPeer robot : robots) {
+    public synchronized RobotInfo getRobotById(String id) {
+        for (RobotInfo robot : robots) {
             if (robot.getId().equals(id)) {
-                return new RobotPeer(robot);
+                return new RobotInfo(robot);
             }
         }
         return null;
     }
 
-    public synchronized List<RobotPeer> getAllRobots() {
+    public synchronized List<RobotInfo> getAllRobots() {
         // deep copy
-        List<RobotPeer> result = new ArrayList<>();
-        for (RobotPeer robot : robots) {
-            result.add(new RobotPeer(robot));
+        List<RobotInfo> result = new ArrayList<>();
+        for (RobotInfo robot : robots) {
+            result.add(new RobotInfo(robot));
         }
         return result;
     }
@@ -66,7 +66,7 @@ public class RobotNetwork {
     }
 
     public synchronized boolean hasRobotWithId(String id) {
-        for (RobotPeer robot : robots) {
+        for (RobotInfo robot : robots) {
             if (robot.getId().equals(id)) {
                 return true;
             }

@@ -3,7 +3,7 @@ package robot;
 import common.bean.RobotInfoBean;
 import common.response.RobotInitializationResponse;
 import common.utils.Position;
-import robot.adapter.RobotPeerAdapter;
+import robot.adapter.RobotInfoConverter;
 import robot.command.CommandExecutor;
 import robot.command.CommandScheduler;
 import robot.communication.AdministratorRobotClient;
@@ -15,7 +15,7 @@ import robot.exception.ServerRequestException;
 import robot.fault.detection.FaultDetectionHandler;
 import robot.network.RobotNetwork;
 import robot.network.RobotNetworkProvider;
-import robot.network.RobotPeer;
+import robot.network.RobotInfo;
 import robot.state.RobotState;
 import robot.state.RobotStateProvider;
 import robot.state.StateType;
@@ -81,8 +81,8 @@ public class Robot {
         if (response.getOtherRobots() != null) {
             RobotNetwork network = RobotNetworkProvider.getNetwork();
             for (RobotInfoBean robotInfoBean : response.getOtherRobots()) {
-                RobotPeer robotPeer = RobotPeerAdapter.adapt(robotInfoBean);
-                network.addRobot(robotPeer);
+                RobotInfo robotInfo = RobotInfoConverter.convert(robotInfoBean);
+                network.addRobot(robotInfo);
             }
         }
 
@@ -100,7 +100,7 @@ public class Robot {
         RobotNetwork network = RobotNetworkProvider.getNetwork();
         if (network.hasRobots()) {
             Logger.info("Notifying other robots");
-            for (RobotPeer peerRobot : network.getAllRobots()) {
+            for (RobotInfo peerRobot : network.getAllRobots()) {
                 Logger.info("Notifying robot " + peerRobot.getId());
                 RobotGRPCClient client = new RobotGRPCClient(peerRobot);
                 client.sendRobotInfo();
@@ -112,7 +112,7 @@ public class Robot {
         RobotNetwork network = RobotNetworkProvider.getNetwork();
         if (network.hasRobots()) {
             Logger.info("Notifying other robots of stop");
-            for (RobotPeer peerRobot : network.getAllRobots()) {
+            for (RobotInfo peerRobot : network.getAllRobots()) {
                 Logger.info("Notifying robot " + peerRobot.getId());
                 RobotGRPCClient client = new RobotGRPCClient(peerRobot);
                 client.leaveNetwork();
@@ -135,7 +135,6 @@ public class Robot {
                 } catch (ServerRequestException e) {
                     System.out.println("Error while initializing robot: " + e.getMessage());
                     Logger.error("Error while initializing robot: " + e.getMessage());
-                    Logger.logException(e);
 
                     System.out.print("Do you want to retry? (y/n): ");
                     Scanner scanner = new Scanner(System.in);
@@ -148,7 +147,6 @@ public class Robot {
         } catch (Exception e) {
             System.out.println("Error while starting robot. Please check logs for more details.");
             Logger.error("Error while starting robot: " + e.getMessage());
-            Logger.logException(e);
             return;
         }
 
@@ -158,7 +156,6 @@ public class Robot {
         } catch (Exception e) {
             System.out.println("Error while starting robot. Please check logs for more details.");
             Logger.error("Error while starting robot: " + e.getMessage());
-            Logger.logException(e);
             return;
         }
 
@@ -185,9 +182,8 @@ public class Robot {
         robot.notifyOtherRobotsStop();
 
         robot.server.stop();
-        robot.faultDetectionHandler.stopSignal();
         try {
-            robot.faultDetectionHandler.join(); // Wait for fault detection handler to stop
+            robot.faultDetectionHandler.stopSignal(); // Wait for fault detection handler to stop
         } catch (InterruptedException e) {
             Logger.warning("Interrupted while waiting for fault detection handler to stop");
         }

@@ -39,7 +39,7 @@ public class RobotAPI {
         if (otherRobots.isEmpty()) {
             ErrorResponse errorResponse = new ErrorResponse("No robots found", Response.Status.NOT_FOUND.getStatusCode());
 
-            Logger.debug("No robots found");
+            Logger.info("No robots found");
             return Response.status(Response.Status.NOT_FOUND).entity(errorResponse).build();
         }
 
@@ -47,7 +47,7 @@ public class RobotAPI {
                 .map(RobotEntityAdapter::adapt)
                 .collect(Collectors.toList());
 
-        Logger.debug("Returning robot list");
+        Logger.info("Returning robot list");
         return Response.ok(new GetAllRobotResponse(list)).build();
     }
 
@@ -65,7 +65,7 @@ public class RobotAPI {
             int statusCode = Response.Status.BAD_REQUEST.getStatusCode();
             ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), statusCode);
 
-            Logger.debug(e.getMessage());
+            Logger.info(e.getMessage());
             return Response.status(statusCode).entity(errorResponse).build();
         }
 
@@ -79,7 +79,7 @@ public class RobotAPI {
             int statusCode = Response.Status.CONFLICT.getStatusCode();
             ErrorResponse errorResponse = new ErrorResponse("Robot with id " + request.getId() + " already exists", statusCode);
 
-            Logger.debug("Robot with id " + request.getId() + " already exists");
+            Logger.info("Robot with id " + request.getId() + " already exists");
             return Response.status(statusCode).entity(errorResponse).build();
         }
 
@@ -111,7 +111,7 @@ public class RobotAPI {
         RobotInitializationResponse response = new RobotInitializationResponse(position.getX(), position.getY(), otherRobotInfos);
 
 
-        Logger.debug("Robot with id " + request.getId() + " added successfully");
+        Logger.info("Robot with id " + request.getId() + " added successfully");
         return Response.status(Response.Status.CREATED).entity(response).build();
     }
 
@@ -130,11 +130,11 @@ public class RobotAPI {
             int statusCode = Response.Status.NOT_FOUND.getStatusCode();
             ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), statusCode);
 
-            Logger.debug("Robot with id " + robotId + " not found");
+            Logger.info("Robot with id " + robotId + " not found");
             return Response.status(statusCode).entity(errorResponse).build();
         }
 
-        Logger.debug("Robot with id " + robotId + " removed successfully");
+        Logger.info("Robot with id " + robotId + " removed successfully");
         return Response.ok().build();
     }
 

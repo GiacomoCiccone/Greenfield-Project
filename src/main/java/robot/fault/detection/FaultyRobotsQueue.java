@@ -1,12 +1,13 @@
 package robot.fault.detection;
 
-import robot.network.RobotPeer;
+import common.utils.Logger;
+import robot.network.RobotInfo;
 
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class FaultyRobotsQueue {
-    private final Queue<RobotPeer> queue;
+    private final Queue<RobotInfo> queue;
     private static FaultyRobotsQueue instance;
 
     private FaultyRobotsQueue() {
@@ -20,12 +21,13 @@ public class FaultyRobotsQueue {
         return instance;
     }
 
-    public synchronized void addFaultyRobot(RobotPeer robot) {
+    public synchronized void addFaultyRobot(RobotInfo robot) {
+        Logger.info("Adding robot " + robot.getId() + " to faulty robots queue");
         queue.add(robot);
         notifyAll();
     }
 
-    public synchronized RobotPeer getNextFaultyRobot() throws InterruptedException {
+    public synchronized RobotInfo getNextFaultyRobot() throws InterruptedException {
         while (queue.isEmpty()) {
             wait();
         }

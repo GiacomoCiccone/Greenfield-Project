@@ -21,7 +21,7 @@ public class CommandExecutor {
     }
 
     public String executeCommand(String command) {
-        Logger.debug("Executing command: " + command);
+        Logger.info("Executing command: " + command);
 
         if (command.equals("last")) {
             if (lastCommand.isEmpty()) {
@@ -42,7 +42,7 @@ public class CommandExecutor {
         } else if (command.equalsIgnoreCase("exit")) {
             return "Exiting the API Client...";
         } else {
-            Logger.debug("Invalid command: " + command);
+            Logger.info("Invalid command: " + command);
             return "Invalid command: " + command;
         }
     }

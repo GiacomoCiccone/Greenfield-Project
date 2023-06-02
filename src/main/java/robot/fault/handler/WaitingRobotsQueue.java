@@ -1,5 +1,7 @@
 package robot.fault.handler;
 
+import common.utils.Logger;
+
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -29,5 +31,14 @@ public class WaitingRobotsQueue {
 
     public synchronized boolean hasRobots() {
         return !queue.isEmpty();
+    }
+
+    public synchronized void clear() {
+        queue.clear();
+    }
+
+    public synchronized void removeIfPresentById(String id) {
+        Logger.info("Removing robot " + id + " from faulty robots queue");
+        queue.removeIf(request -> request.getId().equals(id));
     }
 }

@@ -3,7 +3,7 @@ package robot.task;
 import com.google.gson.Gson;
 import common.json.RobotPollutionDataJsonSchema;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import robot.adapter.MeasurementAdapter;
+import robot.adapter.MeasurementConverter;
 import robot.communication.MQTTPublisher;
 import robot.context.RobotContext;
 import robot.context.RobotContextProvider;
@@ -38,7 +38,7 @@ public class SensorDataPublisher extends RobotTaskBase {
         Logger.info("MQTT publisher started");
         try {
             publisher.connect();
-            Logger.debug("MQTT publisher connected");
+            Logger.info("MQTT publisher connected");
         } catch (MqttException e) {
             throw new RuntimeException("MQTT publisher could not connect", e);
         }
@@ -59,7 +59,7 @@ public class SensorDataPublisher extends RobotTaskBase {
 
             // Publish data to MQTT
             List<RobotPollutionDataJsonSchema.MeasurementJsonSchema> jsonSchemaList = measurements.stream()
-                    .map(MeasurementAdapter::adapt)
+                    .map(MeasurementConverter::convert)
                     .collect(Collectors.toList());
 
             RobotPollutionDataJsonSchema schema = new RobotPollutionDataJsonSchema(context.getId(), jsonSchemaList, System.currentTimeMillis());
@@ -75,10 +75,10 @@ public class SensorDataPublisher extends RobotTaskBase {
 
         try {
             publisher.disconnect();
-            Logger.debug("MQTT publisher disconnected");
+            Logger.info("MQTT publisher disconnected");
         } catch (MqttException e) {
             Logger.warning("MQTT publisher could not disconnect");
         }
-        Logger.debug("MQTT publisher stopped");
+        Logger.info("MQTT publisher stopped");
     }
 }

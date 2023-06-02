@@ -35,6 +35,7 @@ public class RobotState {
         if (getState() != StateType.RUNNING) {
             throw new IllegalStateTransitionException("Cannot fault robot when it is not running");
         }
+        lastFaultTime = System.currentTimeMillis();
         isBroken = true;
         isRunning = true;
         isFixing = false;

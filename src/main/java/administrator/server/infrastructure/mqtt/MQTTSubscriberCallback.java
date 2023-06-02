@@ -18,7 +18,7 @@ public class MQTTSubscriberCallback implements MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage message) {
-        Logger.debug("Message arrived from topic " + topic);
+        Logger.info("Message arrived from topic " + topic);
 
         String payload = new String(message.getPayload());
 
@@ -30,12 +30,12 @@ public class MQTTSubscriberCallback implements MqttCallback {
         PollutionDao pollutionDao = new PollutionDao();
         pollutionDao.addPollutionDataEntry(pollutionDataEntity);
 
-        Logger.debug("Added pollution data entry with " + pollutionDataEntity.getPollutionData().size() + " measurements");
+        Logger.info("Added pollution data entry with " + pollutionDataEntity.getPollutionData().size() + " measurements");
     }
 
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-        Logger.debug("Delivery complete: " + token);
+        Logger.info("Delivery complete: " + token);
     }
 }
 

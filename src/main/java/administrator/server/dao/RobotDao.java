@@ -64,7 +64,7 @@ public class RobotDao {
 
         storageRef.getRobotData().add(robot);
 
-        Logger.debug("Added robot with id " + robot.getId() + " to storage");
+        Logger.info("Added robot with id " + robot.getId() + " to storage");
     }
 
 
@@ -75,7 +75,7 @@ public class RobotDao {
             throw new NotFoundException("Robot with id " + robotId + " does not exist");
         }
 
-        Logger.debug("Removed robot with id " + robotId + " from storage");
+        Logger.info("Removed robot with id " + robotId + " from storage");
     }
 
     public synchronized int getLessPopulatedDistrict() {

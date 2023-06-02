@@ -2,8 +2,6 @@ package common.utils;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,11 +25,7 @@ public class Logger {
                 @Override
                 public String format(LogRecord record) {
                     String logType;
-                    if (record.getLevel().intValue() == Level.FINE.intValue()) {
-                        logType = "DEBUG";
-                    } else {
-                        logType = record.getLevel().getName();
-                    }
+                    logType = record.getLevel().getName();
                     String message = record.getMessage();
                     String functionName = getCallingMethodName();
                     int lineNumber = getCallingLineNumber();
@@ -47,17 +41,11 @@ public class Logger {
             }
             logger.addHandler(fileHandler);
             logger.setLevel(Level.ALL);
-            logger.setLevel(new CustomLevel("DEBUG", Level.FINE.intValue() - 1));
         } catch (IOException e) {
-            e.printStackTrace();
             throw new RuntimeException("Unable to create logger");
         }
     }
 
-
-    public static void debug(String message) {
-        logger.log(Level.FINE, message);
-    }
 
     public static void info(String message) {
         logger.log(Level.INFO, message);
@@ -71,22 +59,9 @@ public class Logger {
         logger.log(Level.SEVERE, message);
     }
 
-    public static void logException(Exception e) {
-        StringWriter sw = new StringWriter();
-        e.printStackTrace(new PrintWriter(sw));
-        String stackTrace = sw.toString();
-        logger.log(Level.SEVERE, stackTrace);
-    }
-
     private static String getDateFormatted() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return dateFormat.format(new Date());
-    }
-
-    static class CustomLevel extends Level {
-        public CustomLevel(String name, int value) {
-            super(name, value);
-        }
     }
 
     private static String getMainClassPackageName() {
@@ -96,7 +71,6 @@ public class Logger {
             Class<?> mainClass = Class.forName(mainClassName);
             return mainClass.getPackage().getName();
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
             throw new RuntimeException("Unable to get main class package name");
         }
     }
@@ -109,7 +83,6 @@ public class Logger {
             String name = mainClass.getName().replace(".", File.separator);
             return System.getProperty("user.dir") + File.separator + "src" + File.separator + "main" + File.separator + "java" + File.separator + name.substring(0, name.lastIndexOf(File.separator));
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
             throw new RuntimeException("Unable to get main class path name");
         }
     }
@@ -124,5 +97,4 @@ public class Logger {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
         return stackTrace[10].getLineNumber();
     }
-
 }

@@ -3,19 +3,19 @@ package robot.adapter;
 import common.bean.RobotInfoBean;
 import common.utils.Position;
 import robot.RobotServiceOuterClass;
-import robot.network.RobotPeer;
+import robot.network.RobotInfo;
 
-public class RobotPeerAdapter {
-    public static RobotPeer adapt(RobotInfoBean robotInfoBean) {
+public class RobotInfoConverter {
+    public static RobotInfo convert(RobotInfoBean robotInfoBean) {
         String id = robotInfoBean.getId();
         int port = robotInfoBean.getPort();
         String ip = robotInfoBean.getAddress();
         Position position = new Position(robotInfoBean.getX(), robotInfoBean.getY());
 
-        return new RobotPeer(id, port, ip, position);
+        return new RobotInfo(id, port, ip, position);
     }
 
-    public static RobotPeer adapt(RobotServiceOuterClass.RobotInfo robotInfo) {
+    public static RobotInfo convert(RobotServiceOuterClass.RobotInfo robotInfo) {
         String id = robotInfo.getId();
         int port = robotInfo.getPort();
         String address = robotInfo.getAddress();
@@ -23,17 +23,17 @@ public class RobotPeerAdapter {
         int y = robotInfo.getY();
         Position position = new Position(x, y);
 
-        return new RobotPeer(id, port, address, position);
+        return new RobotInfo(id, port, address, position);
     }
 
-    public static RobotServiceOuterClass.RobotInfo adapt(RobotPeer robotPeer) {
+    public static RobotServiceOuterClass.RobotInfo convert(RobotInfo robotInfo) {
         RobotServiceOuterClass.RobotInfo.Builder builder = RobotServiceOuterClass.RobotInfo.newBuilder();
 
-        builder.setId(robotPeer.getId());
-        builder.setPort(robotPeer.getPort());
-        builder.setAddress(robotPeer.getAddress());
-        builder.setX(robotPeer.getPosition().getX());
-        builder.setY(robotPeer.getPosition().getY());
+        builder.setId(robotInfo.getId());
+        builder.setPort(robotInfo.getPort());
+        builder.setAddress(robotInfo.getAddress());
+        builder.setX(robotInfo.getPosition().getX());
+        builder.setY(robotInfo.getPosition().getY());
 
         return builder.build();
     }

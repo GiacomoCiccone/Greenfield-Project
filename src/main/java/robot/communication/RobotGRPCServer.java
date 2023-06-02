@@ -6,7 +6,7 @@ import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
 import robot.RobotServiceGrpc;
 import robot.RobotServiceOuterClass;
-import robot.adapter.RobotPeerAdapter;
+import robot.adapter.RobotInfoConverter;
 import robot.context.RobotContext;
 import robot.context.RobotContextProvider;
 import robot.fault.handler.AccessRequestWrapper;
@@ -59,7 +59,7 @@ public class RobotGRPCServer {
         public void sendRobotInfo(RobotServiceOuterClass.RobotInfo request, StreamObserver<Empty> responseObserver) {
             Logger.info("New robot joined the network: " + request.getId());
 
-            network.addRobot(RobotPeerAdapter.adapt(request));
+            network.addRobot(RobotInfoConverter.convert(request));
 
             responseObserver.onNext(Empty.newBuilder().build());
             responseObserver.onCompleted();
@@ -87,7 +87,7 @@ public class RobotGRPCServer {
                     responseObserver.onCompleted();
                 } else if (state.getState() == StateType.FIXING) {
                     Logger.info("Access denied, robot is already being fixed");
-                    AccessRequestWrapper wrapper = new AccessRequestWrapper(responseObserver);
+                    AccessRequestWrapper wrapper = new AccessRequestWrapper(responseObserver, request.getId());
                     queue.addRobot(wrapper);
                 } else {
                     if (request.getTimestamp() < state.getLastFaultTime()) {
@@ -96,7 +96,7 @@ public class RobotGRPCServer {
                         responseObserver.onCompleted();
                     } else if (request.getTimestamp() > state.getLastFaultTime()) {
                         Logger.info("Access denied, robot is already being fixed");
-                        AccessRequestWrapper wrapper = new AccessRequestWrapper(responseObserver);
+                        AccessRequestWrapper wrapper = new AccessRequestWrapper(responseObserver, request.getId());
                         queue.addRobot(wrapper);
                     } else {
                         if (request.getId().hashCode() < context.getId().hashCode()) {
@@ -105,7 +105,7 @@ public class RobotGRPCServer {
                             responseObserver.onCompleted();
                         } else {
                             Logger.info("Access denied, robot is already being fixed");
-                            AccessRequestWrapper wrapper = new AccessRequestWrapper(responseObserver);
+                            AccessRequestWrapper wrapper = new AccessRequestWrapper(responseObserver, request.getId());
                             queue.addRobot(wrapper);
                         }
                     }

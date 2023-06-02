@@ -6,19 +6,19 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import robot.RobotServiceGrpc;
 import robot.RobotServiceOuterClass;
-import robot.adapter.RobotPeerAdapter;
+import robot.adapter.RobotInfoConverter;
 import robot.context.RobotContextProvider;
-import robot.network.RobotNetworkProvider;
-import robot.network.RobotPeer;
+import robot.fault.handler.WaitingRobotsQueue;
+import robot.network.RobotInfo;
 import robot.state.RobotStateProvider;
 import common.utils.Logger;
 
 import java.util.List;
 
 public class RobotGRPCClient {
-    RobotPeer receiver;
+    RobotInfo receiver;
 
-    public RobotGRPCClient(RobotPeer receiver) {
+    public RobotGRPCClient(RobotInfo receiver) {
         this.receiver = receiver;
     }
 
@@ -27,24 +27,23 @@ public class RobotGRPCClient {
                 .intercept(new TimeoutMiddleware(receiver))
                 .usePlaintext()
                 .build();
-        RobotPeer robotPeer = RobotContextProvider.getContext().getRobotInfo();
+        RobotInfo robotInfo = RobotContextProvider.getContext().getRobotInfo();
         RobotServiceGrpc.RobotServiceStub asyncStub = RobotServiceGrpc.newStub(channel);
         asyncStub.withDeadlineAfter(1000, java.util.concurrent.TimeUnit.MILLISECONDS)
-                .sendRobotInfo(RobotPeerAdapter.adapt(robotPeer), new StreamObserver<Empty>() {
+                .sendRobotInfo(RobotInfoConverter.convert(robotInfo), new StreamObserver<Empty>() {
                     @Override
                     public void onNext(Empty response) {
                     }
 
                     @Override
                     public void onError(Throwable throwable) {
-                        Logger.warning("Error sending robot info to " + robotPeer.getId());
-                        Logger.logException((Exception) throwable);
+                        Logger.warning("Error sending robot info to " + robotInfo.getId());
                         channel.shutdown();
                     }
 
                     @Override
                     public void onCompleted() {
-                        Logger.debug("Robot info sent to " + robotPeer.getId());
+                        Logger.info("Robot info sent to " + robotInfo.getId());
                         channel.shutdown();
                     }
                 });
@@ -70,13 +69,12 @@ public class RobotGRPCClient {
                     @Override
                     public void onError(Throwable throwable) {
                         Logger.warning("Error sending message to remove robot " + deadRobotId + " to " + receiver.getId());
-                        Logger.logException((Exception) throwable);
                         channel.shutdown();
                     }
 
                     @Override
                     public void onCompleted() {
-                        Logger.debug("Message sent to remove robot " + deadRobotId + " to " + receiver.getId());
+                        Logger.info("Message sent to remove robot " + deadRobotId + " to " + receiver.getId());
                         channel.shutdown();
                     }
                 });
@@ -106,7 +104,7 @@ public class RobotGRPCClient {
                 .askAccess(request, new StreamObserver<Empty>() {
                     @Override
                     public void onNext(Empty response) {
-                        Logger.debug("Access granted by " + receiver.getId());
+                        Logger.info("Access granted by " + receiver.getId());
                         synchronized (waitingOks) {
                             waitingOks.remove(receiver.getId());
                             waitingOks.notify();
@@ -117,9 +115,11 @@ public class RobotGRPCClient {
                     public void onError(Throwable throwable) {
                         Logger.warning("Error while asking access to " + receiver.getId());
                         synchronized (waitingOks) {
-                            waitingOks.remove(receiver.getId());
-                            waitingOks.notify();
+                            if (waitingOks.remove(receiver.getId())) {
+                                waitingOks.notify();
+                            }
                         }
+                        WaitingRobotsQueue.getQueue().removeIfPresentById(receiver.getId());
                     }
 
                     @Override
@@ -134,11 +134,11 @@ public class RobotGRPCClient {
                 .intercept(new TimeoutMiddleware(receiver))
                 .usePlaintext()
                 .build();
-        RobotPeer robotPeer = RobotContextProvider.getContext().getRobotInfo();
+        RobotInfo robotInfo = RobotContextProvider.getContext().getRobotInfo();
         RobotServiceGrpc.RobotServiceStub asyncStub = RobotServiceGrpc.newStub(channel);
 
         RobotServiceOuterClass.LeaveNetworkRequest request = RobotServiceOuterClass.LeaveNetworkRequest.newBuilder()
-                .setId(robotPeer.getId())
+                .setId(robotInfo.getId())
                 .build();
         asyncStub.withDeadlineAfter(1000, java.util.concurrent.TimeUnit.MILLISECONDS)
                 .leaveNetwork(request, new StreamObserver<Empty>() {
@@ -148,14 +148,13 @@ public class RobotGRPCClient {
 
                     @Override
                     public void onError(Throwable throwable) {
-                        Logger.warning("Error sending robot info to " + robotPeer.getId());
-                        Logger.logException((Exception) throwable);
+                        Logger.warning("Error sending robot info to " + robotInfo.getId());
                         channel.shutdown();
                     }
 
                     @Override
                     public void onCompleted() {
-                        Logger.debug("Leave network message sent to " + robotPeer.getId());
+                        Logger.info("Leave network message sent to " + robotInfo.getId());
                         channel.shutdown();
                     }
                 });

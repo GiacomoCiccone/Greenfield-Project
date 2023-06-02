@@ -38,13 +38,15 @@ public class Server {
                 }
             }
 
+            Logger.info("Stopping server...");
+            System.out.println("Stopping server...");
+
             server.restServer.stop();
             server.mqttClient.disconnectAndClose();
 
             Logger.info("Server stopped");
         } catch (Exception e) {
             Logger.error("Server stopped with error: " + e.getMessage());
-            Logger.logException(e);
         }
     }
 }

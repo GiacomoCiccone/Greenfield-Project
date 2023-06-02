@@ -30,7 +30,7 @@ public class PollutionAPI {
         if (n <= 0) {
             ErrorResponse errorResponse = new ErrorResponse("Invalid parameter: n must be greater than 0", Response.Status.BAD_REQUEST.getStatusCode());
 
-            Logger.debug("Invalid parameter: n must be greater than 0");
+            Logger.info("Invalid parameter: n must be greater than 0");
             return Response.status(Response.Status.BAD_REQUEST).entity(errorResponse).build();
         }
 
@@ -42,7 +42,7 @@ public class PollutionAPI {
         } catch (NotFoundException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), Response.Status.NOT_FOUND.getStatusCode());
 
-            Logger.debug("Not enough pollution data found for robot with id " + robotId);
+            Logger.info("Not enough pollution data found for robot with id " + robotId);
             return Response.status(Response.Status.NOT_FOUND).entity(errorResponse).build();
         }
 
@@ -58,7 +58,7 @@ public class PollutionAPI {
 
         double average = sum / totalSample;
 
-        Logger.debug("Returning average pollution data");
+        Logger.info("Returning average pollution data");
         return Response.ok(new AveragePollutionValueResponse(average, totalSample)).build();
     }
 
@@ -73,7 +73,7 @@ public class PollutionAPI {
         if (t1 < 0 || t2 < 0 || t1 > t2) {
             ErrorResponse errorResponse = new ErrorResponse("Invalid parameters: t1 and t2 must be greater than 0 and t1 must be less than t2", Response.Status.BAD_REQUEST.getStatusCode());
 
-            Logger.debug("Invalid parameters: t1 and t2 must be greater than 0 and t1 must be less than t2");
+            Logger.info("Invalid parameters: t1 and t2 must be greater than 0 and t1 must be less than t2");
             return Response.status(Response.Status.BAD_REQUEST).entity(errorResponse).build();
         }
 
@@ -84,7 +84,7 @@ public class PollutionAPI {
         if (pollutionAnalysisData.isEmpty()) {
             ErrorResponse errorResponse = new ErrorResponse("No pollution data found in the given interval", Response.Status.NOT_FOUND.getStatusCode());
 
-            Logger.debug("No pollution data found in the given interval");
+            Logger.info("No pollution data found in the given interval");
             return Response.status(Response.Status.NOT_FOUND).entity(errorResponse).build();
         }
 
@@ -101,7 +101,7 @@ public class PollutionAPI {
 
         double average = sum / totalSample;
 
-        Logger.debug("Returning average pollution data");
+        Logger.info("Returning average pollution data");
         return Response.ok(new AveragePollutionValueResponse(average, totalSample)).build();
     }
 }
