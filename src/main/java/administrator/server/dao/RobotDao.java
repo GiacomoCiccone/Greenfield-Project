@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class RobotDao {
+    public static final int SINGLE_ROBOT_TIMEOUT = 60000;
     private final RobotStorage storageRef;
 
     public RobotDao() {
@@ -65,6 +66,29 @@ public class RobotDao {
         storageRef.getRobotData().add(robot);
 
         Logger.info("Added robot with id " + robot.getId() + " to storage");
+
+        if (storageRef.getRobotData().size() == 1) {
+            Logger.info("RobotStorage thread interrupted");
+            storageRef.setRunnable(() -> {
+                try {
+                    Thread.sleep(SINGLE_ROBOT_TIMEOUT);
+                } catch (InterruptedException e) {
+                    Logger.warning("RobotStorage thread interrupted");
+                    return;
+                }
+
+                try {
+                    removeRobotById(robot.getId());
+                } catch (NotFoundException e) {
+                    Logger.warning(e.getMessage());
+                }
+            });
+            storageRef.startRunnable();
+            Logger.info("Started thread on RobotStorage");
+        } else {
+            storageRef.stopRunnable();
+            Logger.info("Stopped thread on RobotStorage");
+        }
     }
 
 
@@ -76,6 +100,29 @@ public class RobotDao {
         }
 
         Logger.info("Removed robot with id " + robotId + " from storage");
+
+        if (storageRef.getRobotData().size() == 1) {
+            storageRef.setRunnable(() -> {
+                Logger.info("RobotStorage thread interrupted");
+                try {
+                    Thread.sleep(SINGLE_ROBOT_TIMEOUT);
+                } catch (InterruptedException e) {
+                    Logger.warning("RobotStorage thread interrupted");
+                    return;
+                }
+
+                try {
+                    removeRobotById(robotId);
+                } catch (NotFoundException e) {
+                    Logger.warning(e.getMessage());
+                }
+            });
+            storageRef.startRunnable();
+            Logger.info("Started thread on RobotStorage");
+        } else {
+            storageRef.stopRunnable();
+            Logger.info("Stopped thread on RobotStorage");
+        }
     }
 
     public synchronized int getLessPopulatedDistrict() {
@@ -95,5 +142,29 @@ public class RobotDao {
         }
 
         return minIndex + 1;
+    }
+
+    synchronized void resetRunnable(String robotId) {
+        if (storageRef.getRobotData().size() == 1) {
+            storageRef.stopRunnable();
+            storageRef.setRunnable(() -> {
+                Logger.info("RobotStorage thread started");
+                try {
+                    Thread.sleep(SINGLE_ROBOT_TIMEOUT);
+                } catch (InterruptedException e) {
+                    Logger.warning("RobotStorage thread interrupted");
+                    return;
+                }
+
+                try {
+                    removeRobotById(robotId);
+                } catch (NotFoundException e) {
+                    Logger.warning(e.getMessage());
+                }
+            });
+            storageRef.startRunnable();
+        } else {
+            storageRef.stopRunnable();
+        }
     }
 }

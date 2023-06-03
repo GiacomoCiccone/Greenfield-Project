@@ -26,6 +26,9 @@ public class PollutionDao {
 
         Logger.info("Adding pollution data entry for robot with id " + robotId);
         storageRef.getPollutionData().get(robotId).add(pollutionDataEntity);
+
+        RobotDao robotDao = new RobotDao();
+        robotDao.resetRunnable(robotId);
     }
 
     public synchronized List<PollutionDataEntity> getLastNPollutionEntriesByRobotId(int n, String robotId) throws NotFoundException {
