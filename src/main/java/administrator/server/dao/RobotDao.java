@@ -68,7 +68,7 @@ public class RobotDao {
         Logger.info("Added robot with id " + robot.getId() + " to storage");
 
         if (storageRef.getRobotData().size() == 1) {
-            Logger.info("RobotStorage thread interrupted");
+            storageRef.stopRunnable();
             storageRef.setRunnable(() -> {
                 try {
                     Thread.sleep(SINGLE_ROBOT_TIMEOUT);
@@ -102,6 +102,8 @@ public class RobotDao {
         Logger.info("Removed robot with id " + robotId + " from storage");
 
         if (storageRef.getRobotData().size() == 1) {
+            String lastRobotId = storageRef.getRobotData().get(0).getId();
+            storageRef.stopRunnable();
             storageRef.setRunnable(() -> {
                 Logger.info("RobotStorage thread interrupted");
                 try {
@@ -112,7 +114,7 @@ public class RobotDao {
                 }
 
                 try {
-                    removeRobotById(robotId);
+                    removeRobotById(lastRobotId);
                 } catch (NotFoundException e) {
                     Logger.warning(e.getMessage());
                 }

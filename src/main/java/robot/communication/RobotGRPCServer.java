@@ -3,6 +3,7 @@ package robot.communication;
 import com.google.protobuf.Empty;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.grpc.ServerInterceptors;
 import io.grpc.stub.StreamObserver;
 import robot.RobotServiceGrpc;
 import robot.RobotServiceOuterClass;
@@ -25,7 +26,7 @@ public class RobotGRPCServer {
     public RobotGRPCServer(int port) {
         this.port = port;
         this.server = ServerBuilder.forPort(port)
-                .addService(new RobotServiceImpl())
+                .addService(ServerInterceptors.intercept(new RobotServiceImpl(), new LamportServerMiddleware()))
                 .build();
     }
 
