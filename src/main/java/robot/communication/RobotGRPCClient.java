@@ -25,6 +25,7 @@ public class RobotGRPCClient {
     public void sendRobotInfo() {
         ManagedChannel channel = ManagedChannelBuilder.forAddress(receiver.getAddress(), receiver.getPort())
                 .intercept(new TimeoutMiddleware(receiver))
+                .intercept(new LamportClientMiddleware())
                 .usePlaintext()
                 .build();
         RobotInfo robotInfo = RobotContextProvider.getContext().getRobotInfo();
@@ -52,6 +53,7 @@ public class RobotGRPCClient {
     public void removeRobot(String deadRobotId) {
         ManagedChannel channel = ManagedChannelBuilder.forAddress(receiver.getAddress(), receiver.getPort())
                 .intercept(new TimeoutMiddleware(receiver))
+                .intercept(new LamportClientMiddleware())
                 .usePlaintext()
                 .build();
 
@@ -83,6 +85,7 @@ public class RobotGRPCClient {
     public void askAccess(List<String> waitingOks) {
         ManagedChannel channel = ManagedChannelBuilder.forAddress(receiver.getAddress(), receiver.getPort())
                 .intercept(new TimeoutMiddleware(receiver))
+                .intercept(new LamportClientMiddleware())
                 .usePlaintext()
                 .build();
 
@@ -132,6 +135,7 @@ public class RobotGRPCClient {
     public void leaveNetwork() {
         ManagedChannel channel = ManagedChannelBuilder.forAddress(receiver.getAddress(), receiver.getPort())
                 .intercept(new TimeoutMiddleware(receiver))
+                .intercept(new LamportClientMiddleware())
                 .usePlaintext()
                 .build();
         RobotInfo robotInfo = RobotContextProvider.getContext().getRobotInfo();

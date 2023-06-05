@@ -9,6 +9,11 @@ public class RobotState {
     private boolean isBroken = false;
     private boolean isFixing = false;
     private long lastFaultTime = 0;
+    private final LamportClock clock;
+
+    public RobotState() {
+        clock = LamportClock.getInstance();
+    }
 
     public synchronized void turnOn() {
         Logger.info("Robot has been turned on");
@@ -18,6 +23,7 @@ public class RobotState {
         isRunning = true;
         isBroken = false;
         isFixing = false;
+        clock.tick();
     }
 
     public synchronized void turnOff() {
@@ -28,6 +34,7 @@ public class RobotState {
         isRunning = false;
         isBroken = false;
         isFixing = false;
+        clock.tick();
     }
 
     public synchronized void faultOccurred() {
@@ -35,10 +42,11 @@ public class RobotState {
         if (getState() != StateType.RUNNING) {
             throw new IllegalStateTransitionException("Cannot fault robot when it is not running");
         }
-        lastFaultTime = System.currentTimeMillis();
+        lastFaultTime = clock.getTime();
         isBroken = true;
         isRunning = true;
         isFixing = false;
+        clock.tick();
     }
 
     public synchronized void enteredMechanic() {
@@ -49,6 +57,7 @@ public class RobotState {
         isFixing = true;
         isBroken = true;
         isRunning = true;
+        clock.tick();
     }
 
     public synchronized void leftMechanic() {
@@ -59,13 +68,13 @@ public class RobotState {
         isRunning = true;
         isFixing = false;
         isBroken = false;
+        clock.tick();
     }
 
     public synchronized long getLastFaultTime() {
         if (getState() != StateType.BROKEN) {
             throw new IllegalStateTransitionException("Cannot get last fault time when robot is not broken");
         }
-
         return lastFaultTime;
     }
 
@@ -85,4 +94,42 @@ public class RobotState {
         }
     }
 
+    public synchronized void updateClock(long receivedTime) {
+        clock.update(receivedTime);
+    }
+
+    public synchronized long getTime() {
+        return clock.getTime();
+    }
+
+    private static class LamportClock {
+        private static LamportClock instance;
+        private long time;
+
+        private LamportClock() {
+            time = (long) (Math.random() * 1000);
+            Logger.info("Clock initialized to " + time);
+        }
+
+        public static LamportClock getInstance() {
+            if (instance == null) {
+                instance = new LamportClock();
+            }
+            return instance;
+        }
+
+        public void tick() {
+            time++;
+            Logger.info("Clock ticked to " + time);
+        }
+
+        public void update(long receivedTime) {
+            time = Math.max(time, receivedTime) + 1;
+            Logger.info("Clock updated to " + time);
+        }
+
+        public long getTime() {
+            return time;
+        }
+    }
 }

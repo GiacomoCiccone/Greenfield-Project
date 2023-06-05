@@ -22,6 +22,8 @@ import robot.state.StateType;
 import robot.task.*;
 import common.utils.Logger;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -62,8 +64,17 @@ public class Robot {
             }
         }
 
-        System.out.print("Enter server address: ");
-        String serverAddress = scanner.nextLine();
+        String serverAddress;
+        while (true) {
+            System.out.print("Enter server address: ");
+            serverAddress = scanner.nextLine();
+
+            if (serverAddress.startsWith("http://")) {
+                break;
+            } else {
+                System.out.println("Invalid server address. Please enter a valid address.");
+            }
+        }
 
         AdministratorRobotClient.setServerAddress(serverAddress);
 
@@ -161,7 +172,7 @@ public class Robot {
 
         robot.taskManager.startTasks();
 
-        System.out.println("Robot started successfully\n");
+        System.out.println("Robot started successfully");
 
         // Robot running
         robot.state.turnOn();
