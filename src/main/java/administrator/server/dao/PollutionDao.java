@@ -28,7 +28,6 @@ public class PollutionDao {
         storageRef.getPollutionData().get(robotId).add(pollutionDataEntity);
 
         RobotDao robotDao = new RobotDao();
-        robotDao.resetRunnable(robotId);
     }
 
     public synchronized List<PollutionDataEntity> getLastNPollutionEntriesByRobotId(int n, String robotId) throws NotFoundException {
