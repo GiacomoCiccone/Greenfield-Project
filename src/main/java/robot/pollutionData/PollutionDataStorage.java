@@ -20,11 +20,24 @@ public class PollutionDataStorage implements PollutionDataRepository {
         if (window == null) {
             return;
         }
-        measurements.addAll(window);
+
+        if (window.isEmpty()) {
+            return;
+        }
+
+        double average = 0;
+        for (Measurement measurement : window) {
+            average += measurement.getValue();
+        }
+        average /= window.size();
+
+        window.get(0).setValue(average);
+        window.get(0).setTimestamp(System.currentTimeMillis());
+        measurements.add(window.get(0));
     }
 
     @Override
-    public List<Measurement> getAllMeasurementsFromLastRead() {
+    public synchronized List<Measurement> getAllMeasurementsFromLastRead() {
         List<Measurement> result = new ArrayList<>();
         for (int i = lastMeasurementIndex; i < measurements.size(); i++) {
             Measurement measurement = measurements.get(i);
@@ -36,7 +49,7 @@ public class PollutionDataStorage implements PollutionDataRepository {
     }
 
     @Override
-    public void clear() {
+    public synchronized void clear() {
         measurements.clear();
         lastMeasurementIndex = 0;
     }

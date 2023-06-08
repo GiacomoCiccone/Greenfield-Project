@@ -55,13 +55,13 @@ public class PollutionBuffer implements Buffer {
         }
 
         List<Measurement> result = new ArrayList<>();
-        int windowSize = (int) (BUFFER_SIZE * OVERLAP_FACTOR);
 
-        for (int i = 0; i < windowSize; i++) {
+        for (int i = 0; i < BUFFER_SIZE; i++) {
             result.add(measurements.get(i));
         }
 
         // make space for the next window
+        int windowSize = (int) (BUFFER_SIZE * OVERLAP_FACTOR);
         for (int i = 0; i < windowSize; i++) {
             measurements.removeFirst();
         }
