@@ -1,4 +1,7 @@
 <h1 style="text-align: center;">GreenField Project</h1>
+The GreenField Project is a practical demonstration of the concepts taught during the "Distributed and Pervasive Systems" course for the academic year 2022-2023 at the University of Milan. The primary objective of this project is to design and implement a system to manage a network of robots (simulated through processes). These robots are deployed to collect pollution data, which is then transmitted to a central server for analysis and storage. The entire system is built upon the principles of efficient communication, utilizing gRPC for inter-robot communication and MQTT for transmitting data to the server. Additionally, the server provides a RESTful API to enable clients to access and retrieve statistical information from the collected data, and to let robots register and unregister in the network.
+
+Below are some high-level implementation schemes of the main functionalities of the project.
 
 <h2 style="text-align: center;">Administrator Server</h2>
 
